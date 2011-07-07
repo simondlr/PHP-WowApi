@@ -9,6 +9,6 @@ class Character extends Api
     {
         $server = Utilities::urlencode($server);
         $character = Utilities::urlencode($character);
-        $this->request->get("character/$server/$character", array('fields' => implode(',', $fields)));
+        return $this->request->get("character/$server/$character", array('fields' => implode(',', $fields)));
     }
 }

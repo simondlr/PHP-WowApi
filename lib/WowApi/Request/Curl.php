@@ -73,7 +73,6 @@ class Curl extends Request
     protected function doCurlCall(array $curlOptions)
     {
         $curl = curl_init();
-        var_dump($curlOptions);
         curl_setopt_array($curl, $curlOptions);
 
         $response = curl_exec($curl);

@@ -175,6 +175,6 @@ abstract class Request implements RequestInterface
     }
 
     public function setOptions($options) {
-        $this->options = $options;
+        $this->options = array_merge($options, $this->options);
     }
 }

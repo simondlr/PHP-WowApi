@@ -9,6 +9,6 @@ class Guild extends Api
     {
         $server = Utilities::urlencode($server);
         $guild = Utilities::urlencode($guild);
-        $this->request->get("/guild/$server/$guild", array('fields' => implode(',', $fields)));
+        return $this->request->get("/guild/$server/$guild", array('fields' => implode(',', $fields)));
     }
 }
