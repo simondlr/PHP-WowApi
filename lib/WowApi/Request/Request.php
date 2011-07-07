@@ -97,7 +97,7 @@ abstract class Request implements RequestInterface
         
         // Get response
         $response = $this->makeRequest($url, $parameters, $httpMethod, $options);
-        var_dump($response);
+
         //Check for 304 Not Modified header
         if(isset($cache) && $response['headers']['http_code'] === 304) {
             return $cache;

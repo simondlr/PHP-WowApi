@@ -25,6 +25,9 @@ if (!function_exists('json_decode')) {
 
 class Client
 {
+    /**
+     * @var null|\WowApi\Request\RequestInterface
+     */
     protected $request = null;
 
     protected $apis;
@@ -39,9 +42,10 @@ class Client
         'cn' => 'battlenet.com.cn',
     );
 
-    public function __construct($options = array())
+    public function __construct(RequestInterface $request, $options = array())
     {
-        $this->request = new Curl($options);
+        $this->request = $request;
+        $this->getRequest()->setOptions($options);
     }
 
     public function authenticate($publicKey, $privateKey)
