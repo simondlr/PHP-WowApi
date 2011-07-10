@@ -1,8 +1,13 @@
 <?php
 namespace WowApi\Request;
 
+use WowApi\Exception\Exception;
 use WowApi\Exception\RequestException;
 use WowApi\Utilities;
+
+if (!function_exists('curl_init')) {
+    throw new Exception('This API client needs the cURL PHP extension.');
+}
 
 class Curl extends Request
 {

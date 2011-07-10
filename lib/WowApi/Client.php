@@ -1,9 +1,9 @@
 <?php
 namespace WowApi;
 
-use WowApi\Request\Curl;
 use WowApi\Cache\CacheInterface;
-use WowApi\Request\Request;
+use WowApi\Exception\Exception;
+use WowApi\Request\Curl;
 use WowApi\Request\RequestInterface;
 use WowApi\Api\ApiInterface;
 use WowApi\Api\Character;
@@ -15,93 +15,187 @@ use WowApi\Api\GuildRewards;
 use WowApi\Api\Races;
 use WowApi\Api\Realm;
 
-
-if (!function_exists('curl_init')) {
-    throw new \Exception('This API client needs the cURL PHP extension.');
-}
 if (!function_exists('json_decode')) {
-    throw new \Exception('This API client needs the JSON PHP extension.');
+    throw new Exception('This API client needs the JSON PHP extension.');
 }
 
 class Client
 {
     /**
-     * @var null|\WowApi\Request\RequestInterface
+     * @var null|\WowApi\Request\RequestInterface Request class
      */
     protected $request = null;
 
-    protected $apis;
+    /**
+     * @var null|\WowApi\Cache\CacheInterface Cache engine
+     */
+    protected $cache = null;
 
-    protected $region;
-
-    protected $regions = array(
-        'us' => 'us.battle.net',
-        'eu' => 'eu.battle.net',
-        'kr' => 'kr.battle.net',
-        'tw' => 'tw.battle.net',
-        'cn' => 'battlenet.com.cn',
+    /**
+     * @var array Array containing options
+     */
+    protected $options = array(
+        'protocol' => 'http',
+        'region' => 'us',
+        'url' => ':protocol://:region.battle.net/api/wow/:path',
+        'publicKey' => null,
+        'privateKey' => null,
     );
 
-    public function __construct(RequestInterface $request, $options = array())
+    /**
+     * @var array Array containing the instances of the API classes
+     */
+    protected $apis;
+
+    public function __construct($options = array())
     {
-        $this->request = $request;
-        $this->getRequest()->setOptions($options);
+        $this->setOptions($options);
     }
 
-    public function authenticate($publicKey, $privateKey)
-    {
-        $this->getRequest()->setOption('publicKey', $publicKey);
-        $this->getRequest()->setOption('privateKey', $privateKey);
+    protected function getSupportedRegions() {
+        return array('us', 'eu', 'kr', 'tw', 'cn');
     }
 
-    public function setRegion($region)
-    {
-        if(array_key_exists($region, $this->regions)) {
-            $this->region = $region;
-            $this->getRequest()->setOption('region', $region);
-            $this->getRequest()->setOption('baseUrl', $this->regions[$region]);
-        } else {
-            throw new \InvalidArgumentException("That region is not valid");
-        }
-    }
-
-    public function setCache(CacheInterface $cache)
-    {
-        $this->getRequest()->setCache($cache);
-    }
-
-    public function setOption($name, $value)
-    {
-        $this->getRequest()->setOption($name, $value);
-    }
-
+    /**
+     * Make an API call
+     * @param $path
+     * @param array $parameters
+     * @param string $httpMethod
+     * @param array $options
+     * @return void
+     */
     public function api($path, array $parameters = array(), $httpMethod = 'GET', array $options = array())
     {
         $this->getRequest()->send($path, $parameters, $httpMethod, $options);
     }
 
+    /**
+     * Authenticate the application
+     * @param $publicKey
+     * @param $privateKey
+     * @return void
+     */
+    public function authenticate($publicKey, $privateKey)
+    {
+        $this->setOption('publicKey', $publicKey);
+        $this->setOption('privateKey', $privateKey);
+    }
+
+    /**
+     * Set the region
+     * @throws \InvalidArgumentException
+     * @param $region
+     * @return void
+     */
+    public function setRegion($region)
+    {
+        $region = strtolower($region);
+
+        if(in_array($region, $this->getSupportedRegions())) {
+            $this->options['region'] = $region;
+        } else {
+            throw new \InvalidArgumentException(sprintf('The region %s is not supported.', $region));
+        }
+    }
+
+    /**
+     * @throws Exception\Exception
+     * @return \WowApi\Request\RequestInterface
+     */
     public function getRequest() {
+        if($this->request === null) {
+            throw new Exception("A request class must be specified.");
+        }
+
         return $this->request;
     }
 
-    public function setRequest($request) {
+    /**
+     * @param \WowApi\Request\RequestInterface $request
+     * @return void
+     */
+    public function setRequest(\WowApi\Request\RequestInterface $request) {
         $this->request = $request;
     }
 
+    /**
+     * @param $name
+     * @return \WowApi\Api\ApiInterface
+     */
     public function getApi($name)
     {
         return $this->apis[$name];
     }
 
+    /**
+     * @param $name
+     * @param \WowApi\Api\ApiInterface $instance
+     * @return void
+     */
     public function setApi($name, ApiInterface $instance)
     {
         $this->apis[$name] = $instance;
     }
 
+    /**
+     * Sets the cache engine
+     * @param Cache\CacheInterface $cache
+     * @return void
+     */
+    public function setCache(CacheInterface $cache)
+    {
+        $this->cache = $cache;
+    }
+
+    /**
+     * Gets the cache engine
+     * @return false|Cache\CacheInterface
+     */
+    public function getCache()
+    {
+        return $this->cache;
+    }
+
+    /**
+     * Get a single option
+     * @param $name
+     * @return mixed
+     */
+    public function getOption($name) {
+        return $this->options[$name];
+    }
+
+    /**
+     * Set a single option
+     * @param $name
+     * @param $value
+     * @return void
+     */
+    public function setOption($name, $value) {
+        $this->options[$name] = $value;
+    }
+
+    /**
+     * Get an array containing all the options
+     * @return array
+     */
+    public function getOptions() {
+        return $this->options;
+    }
+
+    /**
+     * Stores an array of options
+     * @param $options
+     * @return void
+     */
+    public function setOptions($options) {
+        $this->options = array_merge($options, $this->options);
+    }
+
     /** API's **/
 
     /**
-     * Return the character API
+     * Returns the character API
      * @return \WowApi\Api\Character
      */
     public function getCharacterApi()
@@ -114,7 +208,7 @@ class Client
     }
 
     /**
-     * Return the classes API
+     * Returns the classes API
      * @return \WowApi\Api\Classes
      */
     public function getClassesApi()
@@ -127,7 +221,7 @@ class Client
     }
 
     /**
-     * Return the guild API
+     * Returns the guild API
      * @return \WowApi\Api\Guild
      */
     public function getGuildApi()
@@ -140,7 +234,7 @@ class Client
     }
 
     /**
-     * Return the guildPerks API
+     * Returns the guildPerks API
      * @return \WowApi\Api\GuildPerks
      */
     public function getGuildPerksApi()
@@ -153,7 +247,7 @@ class Client
     }
 
     /**
-     * Return the guildRewards API
+     * Returns the guildRewards API
      * @return \WowApi\Api\GuildRewards
      */
     public function getGuildRewardsApi()
@@ -166,7 +260,7 @@ class Client
     }
 
     /**
-     * Return the races API
+     * Returns the races API
      * @return \WowApi\Api\Races
      */
     public function getRacesApi()
@@ -179,7 +273,7 @@ class Client
     }
 
     /**
-     * Return the realm API
+     * Returns the realm API
      * @return \WowApi\Api\Realm
      */
     public function getRealmApi()
@@ -192,7 +286,7 @@ class Client
     }
 
     /**
-     * Return the item API
+     * Returns the item API
      * @return \WowApi\Api\Items
      */
     public function getItemsApi()

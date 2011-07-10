@@ -1,6 +1,7 @@
 <?php
 namespace WowApi\Request;
 
+use WowApi\Client;
 use WowApi\Exception\ApiException;
 use WowApi\Exception\RequestException;
 use WowApi\Cache\CacheInterface;
@@ -16,31 +17,14 @@ abstract class Request implements RequestInterface
         'User-Agent' => 'PHP WowApi (http://github.com/dancannon/PHP-WowApi)',
     );
 
-    protected $options = array(
-        'protocol' => 'http',
-        'baseUrl' => 'us.battle.net',
-        'region' => 'us',
-        'url' => ':protocol://:baseUrl:path',
-        'path' => '/api/wow/:path',
-        'publicKey' => null,
-        'privateKey' => null,
-    );
-
-    protected $method = 'GET';
-
     /**
-     * @var null|\WowApi\Cache\CacheInterface
+     * @var null|\WowApi\Client
      */
-    protected $cache;
+    protected $client = null;
 
-    public function __construct(array $options = array())
+    public function __construct(Client $client)
     {
-        $this->options = array_merge($this->options, $options);
-    }
-
-    public function setCache(CacheInterface $cache)
-    {
-        $this->cache = $cache;
+        $this->client = $client;
     }
 
     public function get($path, array $parameters = array(), array $options = array())
@@ -65,34 +49,29 @@ abstract class Request implements RequestInterface
 
     public function send($path, array $parameters = array(), $httpMethod = 'GET', array $options = array())
     {
-        $options = array_merge($this->options, $options);
-
-        // Create resource path
-        $path = strtr($options['path'], array(
-            ':path' => trim($path, '/'),
-        ));
+        $options = array_merge($this->getOptions(), $options);
 
         // Attempt to set If-Modified-Since header
-        if($this->cache !== null) {
-            $cache = $this->cache->getCachedResponse($path, $parameters);
+        if($this->client->getCache() !== null) {
+            $cache = $this->client->getCache()->getCachedResponse($path, $parameters);
             if (isset($cache) && isset($cache['last-modified'])) {
                 $this->setHeader('If-Modified-Since', gmdate("D, d M Y H:i:s", $cache['last-modified']) . " GMT");
             }
         }
 
         // Attempt to authenticate application
-        if($this->options['publicKey'] !== null && $this->options['privateKey'] !== null) {
+        if($this->getOption('publicKey') !== null && $this->getOption('privateKey') !== null) {
             $stringToSign =  "$httpMethod\n" . $this->getHttpDate(time()) . "\n$path\n";
-            $signature = base64_encode(hash_hmac('sha1', $stringToSign, utf8_encode($this->options['privateKey'])));
+            $signature = base64_encode(hash_hmac('sha1', $stringToSign, utf8_encode($this->getOption('privateKey'))));
 
-            $this->setHeader("Authorization", "BNET " . $this->options['publicKey'] . "+$signature");
+            $this->setHeader("Authorization", "BNET " . $this->getOption('publicKey') . "+$signature");
         }
 
         // create full url
         $url = strtr($options['url'], array(
             ':protocol' => $options['protocol'],
-            ':baseUrl' => $options['baseUrl'],
-            ':path' => $path
+            ':region' => $options['region'],
+            ':path' => trim($path, '/'),
         ));
         
         // Get response
@@ -115,8 +94,8 @@ abstract class Request implements RequestInterface
                 }
             }
         }
-        if($this->cache !== null) {
-            $this->cache->setCachedResponse($path, $parameters, $response, time());
+        if($this->client->getCache() !== null) {
+            $this->client->getCache()->setCachedResponse($path, $parameters, $response, time());
         }
         return $response;
     }
@@ -163,18 +142,18 @@ abstract class Request implements RequestInterface
     }
 
     public function getOption() {
-        return $this->options;
+        return $this->getOptions();
     }
 
     public function setOption($name, $value) {
-        $this->options[$name] = $value;
+        $this->setOption($name, $value);
     }
 
     public function getOptions() {
-        return $this->options;
+        return $this->getOptions();
     }
 
     public function setOptions($options) {
-        $this->options = array_merge($options, $this->options);
+        return $this->client->setOptions($options);
     }
 }
