@@ -83,12 +83,17 @@ abstract class Request implements RequestInterface
         } else {
             //$response = Utilities::decode(json_decode($response['response']));
             $response = json_decode($response['response']);
+            if (strpos($response['headers']['content_type'], 'application/json') !== false) {
+                $response = json_decode($response['response'], true);
+            } else {
+                $response = (array) $response['response'];
+            }
             // Check for errors
-            if(!is_object($response)) {
+            if(!is_array($response)) {
                 throw new ApiException('The response was not valid');
-            } elseif(isset($response->status) && $response->status = 'nok') {
-                if(isset($response->reason)) {
-                    throw new ApiException($response->reason);
+            } elseif(isset($response['status']) && $response['status'] = 'nok') {
+                if(isset($response['reason'])) {
+                    throw new ApiException($response['reason']);
                 } else {
                     throw new ApiException("Unknown error");
                 }
