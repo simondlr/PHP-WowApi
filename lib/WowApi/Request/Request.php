@@ -7,8 +7,7 @@ use WowApi\Exception\RequestException;
 use WowApi\Cache\CacheInterface;
 use WowApi\Utilities;
 
-abstract class Request implements RequestInterface
-{
+abstract class Request implements RequestInterface {
     protected $headers = array(
         'Expect' => '',
         'Accept' => 'application/json',
@@ -22,37 +21,31 @@ abstract class Request implements RequestInterface
      */
     protected $client = null;
 
-    public function __construct(Client $client)
-    {
+    public function __construct(Client $client) {
         $this->client = $client;
     }
 
-    public function get($path, array $parameters = array(), array $options = array())
-    {
+    public function get($path, array $parameters = array(), array $options = array()) {
         return $this->send($path, $parameters, 'GET', $options);
     }
 
-    public function post($path, array $parameters = array(), array $options = array())
-    {
+    public function post($path, array $parameters = array(), array $options = array()) {
         return $this->send($path, $parameters, 'POST', $options);
     }
 
-    public function put($path, array $parameters = array(), array $options = array())
-    {
+    public function put($path, array $parameters = array(), array $options = array()) {
         return $this->send($path, $parameters, 'PUT', $options);
     }
 
-    public function delete($path, array $parameters = array(), array $options = array())
-    {
+    public function delete($path, array $parameters = array(), array $options = array()) {
         return $this->send($path, $parameters, 'DELETE', $options);
     }
 
-    public function send($path, array $parameters = array(), $httpMethod = 'GET', array $options = array())
-    {
+    public function send($path, array $parameters = array(), $httpMethod = 'GET', array $options = array()) {
         $options = array_merge($this->getOptions(), $options);
 
         // Attempt to set If-Modified-Since header
-        if($this->client->getCache() !== null) {
+        if ($this->client->getCache() !== null) {
             $cache = $this->client->getCache()->getCachedResponse($path, $parameters);
             if (isset($cache) && isset($cache['last-modified'])) {
                 $this->setHeader('If-Modified-Since', gmdate("D, d M Y H:i:s", $cache['last-modified']) . " GMT");
@@ -60,8 +53,8 @@ abstract class Request implements RequestInterface
         }
 
         // Attempt to authenticate application
-        if($this->getOption('publicKey') !== null && $this->getOption('privateKey') !== null) {
-            $stringToSign =  "$httpMethod\n" . $this->getHttpDate(time()) . "\n$path\n";
+        if ($this->getOption('publicKey') !== null && $this->getOption('privateKey') !== null) {
+            $stringToSign = "$httpMethod\n" . $this->getHttpDate(time()) . "\n$path\n";
             $signature = base64_encode(hash_hmac('sha1', $stringToSign, utf8_encode($this->getOption('privateKey'))));
 
             $this->setHeader("Authorization", "BNET " . $this->getOption('publicKey') . "+$signature");
@@ -69,16 +62,16 @@ abstract class Request implements RequestInterface
 
         // create full url
         $url = strtr($options['url'], array(
-            ':protocol' => $options['protocol'],
-            ':region' => $options['region'],
-            ':path' => trim($path, '/'),
-        ));
-        
+                ':protocol' => $options['protocol'],
+                ':region' => $options['region'],
+                ':path' => trim($path, '/'),
+            ));
+
         // Get response
         $response = $this->makeRequest($url, $parameters, $httpMethod, $options);
 
         //Check for 304 Not Modified header
-        if(isset($cache) && $response['headers']['http_code'] === 304) {
+        if (isset($cache) && $response['headers']['http_code'] === 304) {
             return $cache;
         } else {
             //$response = Utilities::decode(json_decode($response['response']));
@@ -86,20 +79,20 @@ abstract class Request implements RequestInterface
             if (strpos($response['headers']['content_type'], 'application/json') !== false) {
                 $response = json_decode($response['response'], true);
             } else {
-                $response = (array) $response['response'];
+                $response = (array)$response['response'];
             }
             // Check for errors
-            if(!is_array($response)) {
+            if (!is_array($response)) {
                 throw new ApiException('The response was not valid');
-            } elseif(isset($response['status']) && $response['status'] = 'nok') {
-                if(isset($response['reason'])) {
+            } elseif (isset($response['status']) && $response['status'] = 'nok') {
+                if (isset($response['reason'])) {
                     throw new ApiException($response['reason']);
                 } else {
                     throw new ApiException("Unknown error");
                 }
             }
         }
-        if($this->client->getCache() !== null) {
+        if ($this->client->getCache() !== null) {
             $this->client->getCache()->setCachedResponse($path, $parameters, $response, time());
         }
         return $response;
@@ -112,22 +105,43 @@ abstract class Request implements RequestInterface
      *
      * @return string
      */
-    public function getHttpDate($date)
-    {
-        if (!is_numeric($date)) {
+    public function getHttpDate($date = null) {
+
+        if (!is_numeric($date) && $date !== null) {
             $date = strtotime($date);
         }
 
-        return gmdate('D, d M Y H:i:s', $date) . ' GMT';
+        return date(DATE_RFC2822, $date);
     }
 
-    public function getRawHeaders()
-    {
+    public function getRawHeaders() {
         $headers = array();
         foreach ($this->headers as $key => $value) {
             $headers[] = $key . ': ' . $value;
         }
         return $headers;
+    }
+
+    /**
+     * Return the query string as an array. If $build is true, assemble the query string.
+     *
+     * @access public
+     * @param boolean $build
+     * @return string
+     * @final
+     */
+    public function getQueryString(array $parameters) {
+        $queryString = array();
+
+        foreach ($parameters as $key => $value) {
+            if (is_array($value)) {
+                $queryString[] = $key . '=' . $this->getQueryString($value);
+            } else {
+                $queryString[] = $key . '=' . urlencode($value);
+            }
+        }
+
+        return implode('&', $queryString);
     }
 
     public function getHeaders() {

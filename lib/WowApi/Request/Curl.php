@@ -41,11 +41,7 @@ class Curl extends Request
 
 		// Prepare Data
         if (!empty($parameters)) {
-            $queryString = '';
-            foreach($parameters as $name => $parameter) {
-                $queryString .= "$name=" . urlencode(str_replace(' ', '-', $parameter));
-            }
-            $queryString = Utilities::normalize($queryString);
+            $queryString = $this->getQueryString($parameters);
 
             switch($httpMethod) {
                 case 'GET':
@@ -75,6 +71,11 @@ class Curl extends Request
 		}
     }
 
+    /**
+     * Execute the query
+     * @param array $curlOptions
+     * @return array
+     */
     protected function doCurlCall(array $curlOptions)
     {
         $curl = curl_init();
