@@ -7,7 +7,14 @@ class Items extends Api
 {
     public function getItem($itemId)
     {
-        $itemId = Utilities::urlencode($itemId);
-        return $this->request->get("data/item/$itemId");
+        $itemId = (int)$itemId;
+        $item = $this->get("data/item/$itemId");
+        $item['icon'] = $this->getIconURL($this->getOption('region'), $item['icon']);
+        return $item;
+    }
+
+    protected function getIconURL($region, $icon, $size = '18')
+    {
+        return sprintf('http://%s.media.blizzard.com/wow/icons/%d/%s.jpg', $region, $size, $icon);
     }
 }

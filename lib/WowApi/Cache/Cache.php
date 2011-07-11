@@ -5,16 +5,12 @@ abstract class Cache implements CacheInterface
 {
     public function getCachedResponse($path, $parameters)
     {
-        $return = array();
-        $return['last-modified'] = $this->read("wowapi:last-modified" . $this->getHash($path, $parameters));
-        $return['response']      = $this->read("wowapi:response" . $this->getHash($path, $parameters));
-        return $return;
+        return $this->read("wowapi:cache" . $this->getHash($path, $parameters));
     }
 
-    public function setCachedResponse($path, $parameters, $response, $date)
+    public function setCachedResponse($path, $parameters, $response)
     {
-        $this->write("wowapi:last-modified" . $this->getHash($path, $parameters), $date);
-        $this->write("wowapi:response" . $this->getHash($path, $parameters), $response);
+        $this->write("wowapi:cache" . $this->getHash($path, $parameters), $response);
     }
 
     protected function getHash($path, $parameters)

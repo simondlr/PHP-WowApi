@@ -5,6 +5,6 @@ class Classes extends Api
 {
     public function getClasses()
     {
-        return $this->request->get('data/character/classes');
+        return $this->get('data/character/classes');
     }
 }

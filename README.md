@@ -25,7 +25,8 @@ PHP-WowApi uses the autoloading features of PHP and works with most of the major
 
 ``` php
 <?php
-const WOW_API_BASE_PATH = 'vendors/lib';
+//Path relative to this file
+const WOW_API_BASE_PATH = '__DIR__ . '/../lib/';
 spl_autoload_register(function($class) {
     $file = WOW_API_BASE_PATH . strtr($class, '\\', '/') . '.php';
     if (file_exists($file)) {
@@ -45,7 +46,8 @@ use WowApi\Client;
 use WowApi\Request\Curl;
 
 $request = new Curl();
-$api = new Client($request);
+$api = new Client();
+$api->setRequest($request);
 ```
 
 ### Configuration ###
@@ -69,6 +71,7 @@ use WowApi\Request\Curl;
 
 $request = new Curl();
 $api = new Client($request);
+$api->setRequest($request);
 $api->setRegion('eu');
 ```
 
@@ -85,7 +88,8 @@ use WowApi\Cache\ApcCache;
 
 $request = new Curl();
 $cache = new ApcCache();
-$api = new Client($request);
+$api = new Client();
+$api->setRequest($request);
 $api->setCache($cache);
 ```
 
@@ -101,7 +105,8 @@ use WowApi\Client;
 use WowApi\Request\Curl;
 
 $request = new Curl();
-$api = new Client($request);
+$api = new Client();
+$api->setRequest($request);
 $api->authenticate('PUBLICKEY', 'PRIVATEKEY');
 ```
 
@@ -114,7 +119,8 @@ use WowApi\Client;
 use WowApi\Request\Curl;
 
 $request = new Curl();
-$api = new Client($request);
+$api = new Client();
+$api->setRequest($request);
 # Fetch character info
 $api->getCharacterApi->getCharacter('REALMNAME', 'CHARACTERNAME');
 # Fetch optional fields
@@ -128,7 +134,8 @@ use WowApi\Client;
 use WowApi\Request\Curl;
 
 $request = new Curl();
-$api = new Client($request);
+$api = new Client();
+$api->setRequest($request);
 # Fetch guild info
 $api->getGuildApi->getGuild('REALMNAME', 'GUILDNAME');
 # Fetch optional fields
@@ -142,7 +149,8 @@ use WowApi\Client;
 use WowApi\Request\Curl;
 
 $request = new Curl();
-$api = new Client($request);
+$api = new Client();
+$api->setRequest($request);
 # Fetch all realms
 $api->getRealmApi->getRealms();
 # Fetch multiple realms

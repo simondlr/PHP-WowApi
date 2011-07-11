@@ -5,6 +5,6 @@ class GuildRewards extends Api
 {
     public function getRewards()
     {
-        return $this->request->get('data/guild/rewards');
+        return $this->get('data/guild/rewards');
     }
 }

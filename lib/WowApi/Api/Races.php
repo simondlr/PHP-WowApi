@@ -5,6 +5,6 @@ class Races extends Api
 {
     public function getRaces()
     {
-        return $this->request->get('data/character/races');
+        return $this->get('data/character/races');
     }
 }

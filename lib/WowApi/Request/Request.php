@@ -4,6 +4,7 @@ namespace WowApi\Request;
 use WowApi\Client;
 use WowApi\Exception\ApiException;
 use WowApi\Exception\RequestException;
+use WowApi\Exception\NotFoundException;
 use WowApi\Cache\CacheInterface;
 use WowApi\Utilities;
 
@@ -21,7 +22,11 @@ abstract class Request implements RequestInterface {
      */
     protected $client = null;
 
-    public function __construct(Client $client) {
+    public function __construct() {
+    }
+
+    public function setClient(Client $client)
+    {
         $this->client = $client;
     }
 
@@ -44,11 +49,14 @@ abstract class Request implements RequestInterface {
     public function send($path, array $parameters = array(), $httpMethod = 'GET', array $options = array()) {
         $options = array_merge($this->getOptions(), $options);
 
-        // Attempt to set If-Modified-Since header
+        // Check the cache
         if ($this->client->getCache() !== null) {
             $cache = $this->client->getCache()->getCachedResponse($path, $parameters);
+            if (isset($cache) && isset($cache['cachedAt']) && (time() - $cache['cachedAt']) < $options['ttl']) {
+                return $cache;
+            }
             if (isset($cache) && isset($cache['last-modified'])) {
-                $this->setHeader('If-Modified-Since', gmdate("D, d M Y H:i:s", $cache['last-modified']) . " GMT");
+                $this->setHeader('If-Modified-Since', gmdate("D, d M Y H:i:s", $cache['lastModified']) . " GMT");
             }
         }
 
@@ -60,29 +68,35 @@ abstract class Request implements RequestInterface {
             $this->setHeader("Authorization", "BNET " . $this->getOption('publicKey') . "+$signature");
         }
 
-        // create full url
+        // Create the full url
         $url = strtr($options['url'], array(
                 ':protocol' => $options['protocol'],
                 ':region' => $options['region'],
                 ':path' => trim($path, '/'),
             ));
+        if($httpMethod === 'GET') { $url .= "?" . $this->getQueryString($parameters); }
 
         // Get response
         $response = $this->makeRequest($url, $parameters, $httpMethod, $options);
-
+        $httpCode = $response['headers']['http_code'];
         //Check for 304 Not Modified header
-        if (isset($cache) && $response['headers']['http_code'] === 304) {
+        if (isset($cache) && $httpCode === 304) {
             return $cache;
         } else {
-            //$response = Utilities::decode(json_decode($response['response']));
-            $response = json_decode($response['response']);
+            if ($response['headers']['http_code'])
             if (strpos($response['headers']['content_type'], 'application/json') !== false) {
                 $response = json_decode($response['response'], true);
             } else {
                 $response = (array)$response['response'];
             }
             // Check for errors
-            if (!is_array($response)) {
+            if($httpCode === 404) {
+                if (isset($response['reason'])) {
+                    throw new NotFoundException($response['reason']);
+                } else {
+                    throw new NotFoundException("Resource not found");
+                }
+            } elseif (!is_array($response)) {
                 throw new ApiException('The response was not valid');
             } elseif (isset($response['status']) && $response['status'] = 'nok') {
                 if (isset($response['reason'])) {
@@ -92,8 +106,9 @@ abstract class Request implements RequestInterface {
                 }
             }
         }
+        //Cache the result
         if ($this->client->getCache() !== null) {
-            $this->client->getCache()->setCachedResponse($path, $parameters, $response, time());
+            $this->client->getCache()->setCachedResponse($path, $parameters, $response);
         }
         return $response;
     }
@@ -126,9 +141,8 @@ abstract class Request implements RequestInterface {
      * Return the query string as an array. If $build is true, assemble the query string.
      *
      * @access public
-     * @param boolean $build
+     * @param array $parameters
      * @return string
-     * @final
      */
     public function getQueryString(array $parameters) {
         $queryString = array();
@@ -160,16 +174,16 @@ abstract class Request implements RequestInterface {
         $this->headers[$name] = $value;
     }
 
-    public function getOption() {
-        return $this->getOptions();
+    public function getOption($name) {
+        return $this->client->getOption($name);
     }
 
     public function setOption($name, $value) {
-        $this->setOption($name, $value);
+        $this->client->setOption($name, $value);
     }
 
     public function getOptions() {
-        return $this->getOptions();
+        return $this->client->getOptions();
     }
 
     public function setOptions($options) {

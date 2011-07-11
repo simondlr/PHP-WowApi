@@ -1,6 +1,7 @@
 <?php
 namespace WowApi;
 
+//Not sure if this is needed. Will keep just in case.
 class Utilities
 {
     public static function normalize($string)
@@ -47,15 +48,5 @@ class Utilities
             $output = utf8_decode($input);
         }
         return $output;
-    }
-
-    public static function getIconURL($region, $icon, $size='18')
-    {
-        return sprintf('http://%s.media.blizzard.com/wow/icons/%d/%s.jpg', $region, $size, $icon);
-    }
-
-    public static function getAvatarUrl($region, $avatar)
-    {
-        return sprintf('http://%s.media.blizzard.com/wow/icons/%d/%s.jpg', $region, $avatar);
     }
 }

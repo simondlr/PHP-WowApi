@@ -41,12 +41,7 @@ class Curl extends Request
 
 		// Prepare Data
         if (!empty($parameters)) {
-            $queryString = $this->getQueryString($parameters);
-
             switch($httpMethod) {
-                case 'GET':
-                    $curlOptions[CURLOPT_URL] .= "?$queryString";
-                    break;
                 case 'POST':
                     $curlOptions[CURLOPT_POST] = true;
                     $curlOptions[CURLOPT_POSTFIELDS] = Utilities::encode($parameters);

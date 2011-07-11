@@ -3,7 +3,8 @@ namespace WowApi\Api;
 
 use WowApi\Exception\ApiException;
 
-class Realm extends Api {
+class Realm extends Api
+{
 
     /**
      * Constants for realm type.
@@ -68,8 +69,10 @@ class Realm extends Api {
     );
 
 
-    public function getRealm($realm) {
-        return $this->getRealms(array($realm));
+    public function getRealm($realm)
+    {
+        $response = $this->getRealms(array($realm));
+        return $response[0];
     }
 
     /**
@@ -78,12 +81,15 @@ class Realm extends Api {
      * @param array $realms String or array of realm(s)
      * @return mixed
      */
-    public function getRealms(array $realms = array()) {
+    public function getRealms(array $realms = array())
+    {
         if (empty($realms)) {
-            return $this->request->get('realm/status');
+            $response = $this->get('realm/status');
         } else {
-            return $this->request->get('realm/status', array('realms' => implode(',', $realms)));
+            $this->setQueryParam('realms', implode(',', $realms));
+            $response = $this->get('realm/status');
         }
+        return $response['realms'];
     }
 
 
@@ -94,14 +100,15 @@ class Realm extends Api {
      * @param string $population
      * @return array
      */
-    public function filterByPopulation($population = self::POP_LOW) {
+    public function filterByPopulation($population = self::POP_LOW)
+    {
         if (!in_array($population, $this->schema('population'))) {
             throw new ApiException(sprintf('Invalid population type for %s.', __METHOD__));
         }
 
         $realms = $this->getRealms();
 
-        return $this->filter(__METHOD__, 'population', $population);
+        return $this->filter($realms, 'population', $population);
     }
 
 
@@ -112,7 +119,8 @@ class Realm extends Api {
      * @param int|string $queue
      * @return array
      */
-    public function filterByQueue($queue = self::QUEUE_NO) {
+    public function filterByQueue($queue = self::QUEUE_NO)
+    {
         if (!in_array($queue, $this->schema('queue'))) {
             throw new ApiException(sprintf('Invalid queue status for %s.', __METHOD__));
         }
@@ -129,7 +137,8 @@ class Realm extends Api {
      * @param int|string $status
      * @return array
      */
-    public function filterByStatus($status = self::STATUS_UP) {
+    public function filterByStatus($status = self::STATUS_UP)
+    {
         if (!in_array($status, $this->schema('status'))) {
             throw new ApiException(sprintf('Invalid server status for %s.', __METHOD__));
         }
@@ -146,7 +155,8 @@ class Realm extends Api {
      * @param string $type
      * @return array
      */
-    public function filterByType($type = self::TYPE_PVP) {
+    public function filterByType($type = self::TYPE_PVP)
+    {
         if (!in_array($type, $this->schema('type'))) {
             throw new ApiException(sprintf('Invalid realm type for %s.', __METHOD__));
         }
@@ -154,13 +164,5 @@ class Realm extends Api {
         $realms = $this->getRealms();
 
         return $this->filter($realms, 'type', $type);
-    }
-
-    /**
-     * Get an array of allowed query parameters
-     * @return array
-     */
-    function getQueryWhitelist() {
-        return array('realms');
     }
 }

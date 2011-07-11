@@ -5,10 +5,11 @@ use WowApi\Utilities;
 
 class Guild extends Api
 {
-    public function getGuild($server, $guild, array $fields=array())
+    public function getGuild($server, $guild, array $fields = array())
     {
-        $server = Utilities::urlencode($server);
-        $guild = Utilities::urlencode($guild);
-        return $this->request->get("/guild/$server/$guild", array('fields' => implode(',', $fields)));
+        $server = urlencode($server);
+        $guild = urlencode($guild);
+        $this->setQueryParam('fields', implode(',', $fields));
+        return $this->get("/guild/$server/$guild");
     }
 }
