@@ -83,7 +83,6 @@ abstract class Request implements RequestInterface {
         if (isset($cache) && $httpCode === 304) {
             return $cache;
         } else {
-            if ($response['headers']['http_code'])
             if (strpos($response['headers']['content_type'], 'application/json') !== false) {
                 $response = json_decode($response['response'], true);
             } else {
@@ -96,13 +95,11 @@ abstract class Request implements RequestInterface {
                 } else {
                     throw new NotFoundException("Resource not found");
                 }
-            } elseif (!is_array($response)) {
-                throw new ApiException('The response was not valid');
-            } elseif (isset($response['status']) && $response['status'] = 'nok') {
+            } elseif ((isset($response['status']) && $response['status'] === 'nok') || ($httpCode !== 200)) {
                 if (isset($response['reason'])) {
-                    throw new ApiException($response['reason']);
+                    throw new ApiException($response['reason'], $httpCode);
                 } else {
-                    throw new ApiException("Unknown error");
+                    throw new ApiException("Unknown error", $httpCode);
                 }
             }
         }
