@@ -8,11 +8,9 @@ spl_autoload_register(function($class)
     if (file_exists($file)) {
         require $file;
         return true;
-    } else {
-        return false;
     }
 });
 
 require __DIR__.'/Shared.php';
-require __DIR__ . '/Keys.php';
+require __DIR__.'/Keys.php';
 
