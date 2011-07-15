@@ -1,9 +1,39 @@
 <?php
 namespace WowApi;
 
-//Not sure if this is needed. Will keep just in case.
 class Utilities
 {
+    /**
+     * @static
+     * @param $region Region
+     * @param $thumbnail Thumbnail path from API
+     * @return string
+     */
+    public static function getThumbnailUrl($region, $thumbnail)
+    {
+        return sprintf('http://%1$s.battle.net/static-render/%1$s/%2$s', $region, $thumbnail);
+    }
+
+    /**
+     * @static
+     * @throws \InvalidArgumentException
+     * @param $region Region
+     * @param $icon Icon path from API
+     * @param string $size Icon size (Allowed sizes: 18, 36, 56)
+     * @return string
+     */
+    public static function getIconURL($region, $icon, $size = '18')
+    {
+        if(!in_array($size, array(18, 36, 56))) {
+            throw new \InvalidArgumentException("That size is not allowed.");
+        }
+        return sprintf('http://%s.media.blizzard.com/wow/icons/%d/%s.jpg', $region, $size, $icon);
+    }
+
+
+
+
+
     public static function normalize($string)
     {
         return \Normalizer::normalize($string, \Normalizer::FORM_KC);

@@ -105,6 +105,7 @@ abstract class Request implements RequestInterface {
         }
         //Cache the result
         if ($this->client->getCache() !== null) {
+            $response['lastModified'] = round($response['lastModified']/1000);
             $this->client->getCache()->setCachedResponse($path, $parameters, $response);
         }
         return $response;
