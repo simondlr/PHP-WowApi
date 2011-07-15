@@ -78,16 +78,16 @@ $api->setRegion('eu');
 
 ### Caching ###
 
-To reduce the amount of api calls that are made the application uses a cache adaptor to store the last response and deal with the If-Modified-Since and Last-Modified headers as recommended by blizzard. Currently only a APC cache adaptor is available for use. To use the cache adaptor you should use the following code
+To reduce the amount of api calls that are made the application uses a cache adaptor to store the last response and deal with the If-Modified-Since and Last-Modified headers as recommended by blizzard. The available cache adaptors are: Apc, Memcache, Redis(Using the Predis lib), Simple(Stores data in an array) and Null(Doesnt cache but is used for testing).. To use the cache adaptor you should use the following code:
 
 ``` php
 <?php
 use WowApi\Client;
 use WowApi\Request\Curl;
-use WowApi\Cache\ApcCache;
+use WowApi\Cache\Apc;
 
 $request = new Curl();
-$cache = new ApcCache();
+$cache = new Apc();
 $api = new Client();
 $api->setRequest($request);
 $api->setCache($cache);

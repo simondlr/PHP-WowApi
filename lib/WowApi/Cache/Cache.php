@@ -3,6 +3,13 @@ namespace WowApi\Cache;
 
 abstract class Cache implements CacheInterface
 {
+    protected $options;
+
+    public function __construct($options)
+    {
+        $this->options = $options;
+    }
+
     public function getCachedResponse($path, $parameters)
     {
         return $this->read("wowapi:cache" . $this->getHash($path, $parameters));
@@ -16,5 +23,25 @@ abstract class Cache implements CacheInterface
     protected function getHash($path, $parameters)
     {
         return md5($path . serialize($parameters));
+    }
+
+    public function getOptions()
+    {
+        return $this->options;
+    }
+
+    public function setOptions($options)
+    {
+        $this->options = array_merge($this->options, $options);
+    }
+
+    public function getOption($name)
+    {
+        return $this->options[$name];
+    }
+
+    public function setOption($name, $value)
+    {
+        $this->options[$name] = $value;
     }
 }
