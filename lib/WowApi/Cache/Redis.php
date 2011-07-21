@@ -3,7 +3,7 @@ namespace WowApi\Cache;
 
 use WowApi\Exception\Exception;
 
-class Memcache extends Cache
+class Redis extends Cache
 {
     /**
      * @var \Predis\Client
