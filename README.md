@@ -26,9 +26,10 @@ PHP-WowApi uses the autoloading features of PHP and works with most of the major
 ``` php
 <?php
 //Path relative to this file
-const WOW_API_BASE_PATH = '__DIR__ . '/../lib/';
 spl_autoload_register(function($class) {
-    $file = WOW_API_BASE_PATH . strtr($class, '\\', '/') . '.php';
+    //Path relative to this file
+    $dir = __DIR__ .'/lib/';
+    $file = $dir . strtr($class, '\\', '/') . '.php';
     if (file_exists($file)) {
         require $file;
         return true;
