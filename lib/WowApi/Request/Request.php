@@ -53,6 +53,7 @@ abstract class Request implements RequestInterface {
         if ($this->client->getCache() !== null) {
             $cache = $this->client->getCache()->getCachedResponse($path, $parameters);
             $cache = json_decode($cache, true);
+            
             if (isset($cache) && isset($cache['cachedAt']) && (time() - $cache['cachedAt']) < $options['ttl']) {
                 return $cache;
             }
@@ -112,11 +113,11 @@ abstract class Request implements RequestInterface {
             }
 
             $response['cachedAt'] = time();
-            $response = json_encode($response);
+            $cache = json_encode($response);
 
-            $this->client->getCache()->setCachedResponse($path, $parameters, $response);
+            $this->client->getCache()->setCachedResponse($path, $parameters, $cache);
         }
-
+        
         return $response;
     }
 
