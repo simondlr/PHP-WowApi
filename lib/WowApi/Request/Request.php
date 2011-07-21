@@ -52,6 +52,7 @@ abstract class Request implements RequestInterface {
         // Check the cache
         if ($this->client->getCache() !== null) {
             $cache = $this->client->getCache()->getCachedResponse($path, $parameters);
+            $cache = json_decode($cache, true);
             if (isset($cache) && isset($cache['cachedAt']) && (time() - $cache['cachedAt']) < $options['ttl']) {
                 return $cache;
             }
@@ -109,6 +110,10 @@ abstract class Request implements RequestInterface {
             if(isset($response['lastModified'])) {
                 $response['lastModified'] = round($response['lastModified']/1000);
             }
+
+            $response['cachedAt'] = time();
+            $response = json_encode($response);
+
             $this->client->getCache()->setCachedResponse($path, $parameters, $response);
         }
 
@@ -116,7 +121,7 @@ abstract class Request implements RequestInterface {
     }
 
     /**
-     * Create an RFC 1123 HTTP-Date from various date values
+     * Create an RFC 2822 HTTP-Date from various date values
      *
      * @param string|int $date Date to convert
      *
