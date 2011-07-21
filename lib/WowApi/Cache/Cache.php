@@ -3,11 +3,11 @@ namespace WowApi\Cache;
 
 abstract class Cache implements CacheInterface
 {
-    protected $options;
+    protected $options = array();
 
     public function __construct($options)
     {
-        $this->options = $options;
+        $this->setOptions($options);
     }
 
     public function getCachedResponse($path, $parameters)
@@ -37,7 +37,11 @@ abstract class Cache implements CacheInterface
 
     public function getOption($name)
     {
-        return $this->options[$name];
+        if(array_key_exists($name, $this->options)) {
+            return $this->options[$name];
+        }
+
+        return false;
     }
 
     public function setOption($name, $value)

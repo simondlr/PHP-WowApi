@@ -55,7 +55,7 @@ abstract class Request implements RequestInterface {
             if (isset($cache) && isset($cache['cachedAt']) && (time() - $cache['cachedAt']) < $options['ttl']) {
                 return $cache;
             }
-            if (isset($cache) && isset($cache['last-modified'])) {
+            if (isset($cache) && isset($cache['lastModified'])) {
                 $this->setHeader('If-Modified-Since', gmdate("D, d M Y H:i:s", $cache['lastModified']) . " GMT");
             }
         }
@@ -103,11 +103,15 @@ abstract class Request implements RequestInterface {
                 }
             }
         }
+
         //Cache the result
         if ($this->client->getCache() !== null) {
-            $response['lastModified'] = round($response['lastModified']/1000);
+            if(isset($response['lastModified'])) {
+                $response['lastModified'] = round($response['lastModified']/1000);
+            }
             $this->client->getCache()->setCachedResponse($path, $parameters, $response);
         }
+
         return $response;
     }
 

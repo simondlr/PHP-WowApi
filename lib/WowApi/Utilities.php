@@ -22,7 +22,7 @@ class Utilities
      * @param string $size Icon size (Allowed sizes: 18, 36, 56)
      * @return string
      */
-    public static function getIconURL($region, $icon, $size = '18')
+    public static function getIconURL($region, $icon, $size = '36')
     {
         if(!in_array($size, array(18, 36, 56))) {
             throw new \InvalidArgumentException("That size is not allowed.");
