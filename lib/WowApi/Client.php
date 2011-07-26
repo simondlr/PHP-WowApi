@@ -32,25 +32,27 @@ class Client
     protected $cache = null;
 
     /**
-     * @var array Array containing options
+     * @var null|\WowApi\ParameterBag API Options
      */
-    protected $options = array(
-        'protocol' => 'http',
-        'region' => 'us',
-        'url' => ':protocol://:region.battle.net/api/wow/:path',
-        'publicKey' => null,
-        'privateKey' => null,
-        'ttl' => 3600,
-    );
+    public $options = null;
 
     /**
      * @var array Array containing the instances of the API classes
      */
-    protected $apis;
+    public $apis = null;
 
     public function __construct($options = array())
     {
-        $this->setOptions($options);
+        $this->apis = new ApiBag();
+        $this->setCache(new Cache\Null());
+        $this->options = new ParameterBag(array(
+            'protocol' => 'http',
+            'region' => 'us',
+            'url' => ':protocol://:region.battle.net/api/wow/:path',
+            'publicKey' => null,
+            'privateKey' => null,
+            'ttl' => 3600,
+        ));
     }
 
     /**
@@ -82,8 +84,8 @@ class Client
      */
     public function authenticate($publicKey, $privateKey)
     {
-        $this->setOption('publicKey', $publicKey);
-        $this->setOption('privateKey', $privateKey);
+        $this->options->set('publicKey', $publicKey);
+        $this->options->set('privateKey', $privateKey);
     }
 
     /**
@@ -97,7 +99,7 @@ class Client
         $region = strtolower($region);
 
         if(in_array($region, $this->getSupportedRegions())) {
-            $this->options['region'] = $region;
+            $this->options->set('region', $region);
         } else {
             throw new \InvalidArgumentException(sprintf('The region %s is not supported.', $region));
         }
@@ -105,7 +107,9 @@ class Client
 
     /**
      * Get the request object
-     * @throws Exception\Exception
+
+     *
+     * @internal param $ Exception\Exception
      * @return \WowApi\Request\RequestInterface
      */
     public function getRequest() {
@@ -127,27 +131,6 @@ class Client
     }
 
     /**
-     * Get an API resource
-     * @param $name
-     * @return \WowApi\Api\ApiInterface
-     */
-    public function getApi($name)
-    {
-        return $this->apis[$name];
-    }
-
-    /**
-     * Set an API resource
-     * @param $name
-     * @param \WowApi\Api\ApiInterface $instance
-     * @return void
-     */
-    public function setApi($name, ApiInterface $instance)
-    {
-        $this->apis[$name] = $instance;
-    }
-
-    /**
      * Sets the cache engine
      * @param Cache\CacheInterface $cache
      * @return void
@@ -166,42 +149,6 @@ class Client
         return $this->cache;
     }
 
-    /**
-     * Get a single option
-     * @param $name
-     * @return mixed
-     */
-    public function getOption($name) {
-        return $this->options[$name];
-    }
-
-    /**
-     * Set a single option
-     * @param $name
-     * @param $value
-     * @return void
-     */
-    public function setOption($name, $value) {
-        $this->options[$name] = $value;
-    }
-
-    /**
-     * Get an array containing all the options
-     * @return array
-     */
-    public function getOptions() {
-        return $this->options;
-    }
-
-    /**
-     * Stores an array of options
-     * @param $options
-     * @return void
-     */
-    public function setOptions($options) {
-        $this->options = array_merge($options, $this->options);
-    }
-
     /** API's **/
 
     /**
@@ -210,11 +157,11 @@ class Client
      */
     public function getCharacterApi()
     {
-        if (!isset($this->apis['character'])) {
-            $this->setApi('character', new Character($this));
+        if (!$this->apis->get('character')) {
+            $this->apis->set('character', new Character($this));
         }
 
-        return $this->apis['character'];
+        return $this->apis->get('character');
     }
 
     /**
@@ -223,11 +170,11 @@ class Client
      */
     public function getClassesApi()
     {
-        if (!isset($this->apis['classes'])) {
-            $this->setApi('classes', new Classes($this));
+        if (!$this->apis->has('classes')) {
+            $this->apis->set('classes', new Classes($this));
         }
 
-        return $this->apis['classes'];
+        return $this->apis->get('classes');
     }
 
     /**
@@ -236,11 +183,11 @@ class Client
      */
     public function getGuildApi()
     {
-        if (!isset($this->apis['guild'])) {
-            $this->setApi('guild', new Guild($this));
+        if (!$this->apis->has('guild')) {
+            $this->apis->set('guild', new Guild($this));
         }
 
-        return $this->apis['guild'];
+        return $this->apis->get('guild');
     }
 
     /**
@@ -249,11 +196,11 @@ class Client
      */
     public function getGuildPerksApi()
     {
-        if (!isset($this->apis['guildPerks'])) {
-            $this->setApi('guildPerks', new GuildPerks($this));
+        if (!$this->apis->get('guildPerks')) {
+            $this->apis->set('guildPerks', new GuildPerks($this));
         }
 
-        return $this->apis['guildPerks'];
+        return $this->apis->get('guildPerks');
     }
 
     /**
@@ -262,11 +209,11 @@ class Client
      */
     public function getGuildRewardsApi()
     {
-        if (!isset($this->apis['guildRewards'])) {
-            $this->setApi('guildRewards', new GuildRewards($this));
+        if (!$this->apis->has('guildRewards')) {
+            $this->apis->set('guildRewards', new GuildRewards($this));
         }
 
-        return $this->apis['guildRewards'];
+        return $this->apis->get('guildRewards');
     }
 
     /**
@@ -275,11 +222,11 @@ class Client
      */
     public function getRacesApi()
     {
-        if (!isset($this->apis['races'])) {
-            $this->setApi('races', new Races($this));
+        if (!$this->apis->has('races')) {
+            $this->apis->set('races', new Races($this));
         }
 
-        return $this->apis['races'];
+        return $this->apis->get('races');
     }
 
     /**
@@ -288,11 +235,11 @@ class Client
      */
     public function getRealmApi()
     {
-        if (!isset($this->apis['realm'])) {
-            $this->setApi('realm', new Realm($this));;
+        if (!$this->apis->get('realm')) {
+            $this->apis->set('realm', new Realm($this));;
         }
 
-        return $this->apis['realm'];
+        return $this->apis->get('realm');
     }
 
     /**
@@ -301,11 +248,11 @@ class Client
      */
     public function getItemsApi()
     {
-        if (!isset($this->apis['items'])) {
-            $this->setApi('items', new Items($this));;
+        if (!$this->apis->has('items')) {
+            $this->apis->set('items', new Items($this));;
         }
 
-        return $this->apis['items'];
+        return $this->apis->get('items');
     }
 
 }
