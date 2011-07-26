@@ -17,6 +17,6 @@ class Null extends Cache
     }
 
     public function read($key) {
-        return;
+        return false;
     }
 }
