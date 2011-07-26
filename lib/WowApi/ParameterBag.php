@@ -29,9 +29,15 @@ class ParameterBag
      *
      * @api
      */
-    public function all()
+    public function all($clear=false)
     {
-        return $this->parameters;
+        $parameters = $this->parameters;
+
+        if($clear === true) {
+            $this->parameters = array();
+        }
+
+        return $parameters;
     }
 
     /**
