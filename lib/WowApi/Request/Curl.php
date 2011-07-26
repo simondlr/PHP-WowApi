@@ -3,7 +3,7 @@ namespace WowApi\Request;
 
 use WowApi\Exception\Exception;
 use WowApi\Exception\RequestException;
-use WowApi\Utilities;
+use WowApi\ParameterBag;
 
 if (!function_exists('curl_init')) {
     throw new Exception('This API client needs the cURL PHP extension.');
@@ -21,7 +21,7 @@ class Curl extends Request
      *
      * @return string HTTP response
      */
-    public function makeRequest($url, array $parameters = array(), $httpMethod = 'GET', array $options = array())
+    public function makeRequest($url, array $parameters = array(), $httpMethod = 'GET')
     {
         //Set cURL options
         $curlOptions = array(
@@ -35,16 +35,16 @@ class Curl extends Request
             CURLOPT_VERBOSE        => false,
         );
         if(isset($options['curlOptions'])) {
-            $curlOptions = array_merge($options['curlOptions'], $curlOptions);
+            $curlOptions = array_merge($this->client->options->get('curlOptions'), $curlOptions);
         }
-        $curlOptions[CURLOPT_HTTPHEADER] = $this->getRawHeaders();
+        $curlOptions[CURLOPT_HTTPHEADER] = $this->headers->all();
 
 		// Prepare Data
         if (!empty($parameters)) {
             switch($httpMethod) {
                 case 'POST':
                     $curlOptions[CURLOPT_POST] = true;
-                    $curlOptions[CURLOPT_POSTFIELDS] = Utilities::encode($parameters);
+                    $curlOptions[CURLOPT_POSTFIELDS] = Utilities::encodeUrlParam($parameters);
                     break;
                 case 'PUT':
                     $file_handle = fopen($parameters, 'r');

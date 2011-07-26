@@ -7,9 +7,12 @@ class Guild extends Api
 {
     public function getGuild($server, $guild, array $fields = array())
     {
-        $server = urlencode($server);
-        $guild = urlencode($guild);
+        $server = Utilities::encodeUrlParam($server);
+        $guild = Utilities::encodeUrlParam($guild);
+
         $this->setQueryParam('fields', implode(',', $fields));
-        return $this->get("/guild/$server/$guild");
+        $guild = $this->get("/guild/$server/$guild");
+
+        return $guild;
     }
 }

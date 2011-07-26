@@ -72,7 +72,8 @@ class Realm extends Api
     public function getRealm($realm)
     {
         $response = $this->getRealms(array($realm));
-        return $response[0];
+
+        return $response !== false ? $response[0] : false;
     }
 
     /**
@@ -89,7 +90,12 @@ class Realm extends Api
             $this->setQueryParam('realms', implode(',', $realms));
             $response = $this->get('realm/status');
         }
-        return $response['realms'];
+
+        if(empty($realms) || count($response['realms']) === count($realms)) {
+            return $response['realms'];
+        } else {
+            return false;
+        }
     }
 
 

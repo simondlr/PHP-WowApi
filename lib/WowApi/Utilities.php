@@ -3,6 +3,16 @@ namespace WowApi;
 
 class Utilities
 {
+    protected static $normalizedChars = array(
+        'Š'=>'S', 'š'=>'s', 'Ð'=>'Dj','Ž'=>'Z', 'ž'=>'z', 'À'=>'A', 'Á'=>'A', 'Â'=>'A', 'Ã'=>'A', 'Ä'=>'A',
+        'Å'=>'A', 'Æ'=>'A', 'Ç'=>'C', 'È'=>'E', 'É'=>'E', 'Ê'=>'E', 'Ë'=>'E', 'Ì'=>'I', 'Í'=>'I', 'Î'=>'I',
+        'Ï'=>'I', 'Ñ'=>'N', 'Ò'=>'O', 'Ó'=>'O', 'Ô'=>'O', 'Õ'=>'O', 'Ö'=>'O', 'Ø'=>'O', 'Ù'=>'U', 'Ú'=>'U',
+        'Û'=>'U', 'Ü'=>'U', 'Ý'=>'Y', 'Þ'=>'B', 'ß'=>'Ss','à'=>'a', 'á'=>'a', 'â'=>'a', 'ã'=>'a', 'ä'=>'a',
+        'å'=>'a', 'æ'=>'a', 'ç'=>'c', 'è'=>'e', 'é'=>'e', 'ê'=>'e', 'ë'=>'e', 'ì'=>'i', 'í'=>'i', 'î'=>'i',
+        'ï'=>'i', 'ð'=>'o', 'ñ'=>'n', 'ò'=>'o', 'ó'=>'o', 'ô'=>'o', 'õ'=>'o', 'ö'=>'o', 'ø'=>'o', 'ù'=>'u',
+        'ú'=>'u', 'û'=>'u', 'ý'=>'y', 'ý'=>'y', 'þ'=>'b', 'ÿ'=>'y', 'ƒ'=>'f'
+    );
+
     /**
      * @static
      * @param $region Region
@@ -30,53 +40,21 @@ class Utilities
         return sprintf('http://%s.media.blizzard.com/wow/icons/%d/%s.jpg', $region, $size, $icon);
     }
 
-
-
-
-
-    public static function normalize($string)
+    public static function encodeUrlParam($input)
     {
-        return \Normalizer::normalize($string, \Normalizer::FORM_KC);
-    }
-
-    public static function urlencode($input)
-    {
-        return urlencode(self::encode($input));
-    }
-
-    public static function encode($input)
-    {
-        if(is_object($input)) {
-            $output = new \stdClass();
-            foreach ($input as $key => $value) {
-                $output->$key = self::encode($value);
+        if(is_array($input)) {
+            $return = array();
+            foreach($input as $key => $item) {
+                $return[$key] = self::encodeUrlParam($item);
             }
-        } elseif(is_array($input)) {
-            $output = array();
-            foreach ($input as $key => $value) {
-                $output[$key] = self::encode($value);
-            }
+
+            return $return;
         } else {
-            $output = utf8_encode(self::normalize($input));
-        }
-        return $output;
-    }
+            $input     =     str_replace(' ', '-', $input);
+            $input     =     str_replace('--', '-', $input);
 
-    public static function decode($input)
-    {
-        if(is_object($input)) {
-            $output = new \stdClass();
-            foreach ($input as $key => $value) {
-                $output->$key = self::decode($value);
-            }
-        } elseif(is_array($input)) {
-            $output = array();
-            foreach ($input as $key => $value) {
-                $output[$key] = self::decode($value);
-            }
-        } else {
-            $output = utf8_decode($input);
+            //$input = strtr($input, self::$normalizedChars);
+            return urlencode($input);
         }
-        return $output;
     }
 }

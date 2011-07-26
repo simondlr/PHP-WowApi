@@ -6,16 +6,14 @@ use WowApi\Exception\ApiException;
 use WowApi\Exception\RequestException;
 use WowApi\Exception\NotFoundException;
 use WowApi\Cache\CacheInterface;
+use WowApi\ParameterBag;
 use WowApi\Utilities;
 
 abstract class Request implements RequestInterface {
-    protected $headers = array(
-        'Expect' => '',
-        'Accept' => 'application/json',
-        'Accept-Encoding' => 'gzip',
-        'Content-Type' => 'application/json',
-        'User-Agent' => 'PHP WowApi (http://github.com/dancannon/PHP-WowApi)',
-    );
+    /**
+     * @var null|\WowApi\Request\HeaderBag
+     */
+    public $headers = null;
 
     /**
      * @var null|\WowApi\Client
@@ -23,6 +21,13 @@ abstract class Request implements RequestInterface {
     protected $client = null;
 
     public function __construct() {
+        $this->headers = new HeaderBag(array(
+            'Expect'            => '',
+            'Accept'            => 'application/json',
+            'Accept-Encoding'   => 'gzip',
+            'Content-Type'      => 'application/json',
+            'User-Agent'        => 'PHP WowApi (http://github.com/dancannon/PHP-WowApi)',
+        ));
     }
 
     public function setClient(Client $client)
@@ -30,53 +35,46 @@ abstract class Request implements RequestInterface {
         $this->client = $client;
     }
 
-    public function get($path, array $parameters = array(), array $options = array()) {
-        return $this->send($path, $parameters, 'GET', $options);
+    public function get($path, array $parameters = array()) {
+        return $this->send($path, $parameters, 'GET');
     }
 
-    public function post($path, array $parameters = array(), array $options = array()) {
-        return $this->send($path, $parameters, 'POST', $options);
+    public function post($path, array $parameters = array()) {
+        return $this->send($path, $parameters, 'POST');
     }
 
-    public function put($path, array $parameters = array(), array $options = array()) {
-        return $this->send($path, $parameters, 'PUT', $options);
+    public function put($path, array $parameters = array()) {
+        return $this->send($path, $parameters, 'PUT');
     }
 
-    public function delete($path, array $parameters = array(), array $options = array()) {
-        return $this->send($path, $parameters, 'DELETE', $options);
+    public function delete($path, array $parameters = array()) {
+        return $this->send($path, $parameters, 'DELETE');
     }
 
-    public function send($path, array $parameters = array(), $httpMethod = 'GET', array $options = array()) {
-        $options = array_merge($this->getOptions(), $options);
+    public function send($path, array $parameters = array(), $httpMethod = 'GET') {
+        $options = $this->client->options;
 
         // Check the cache
-        if ($this->client->getCache() !== null) {
-            $cache = $this->client->getCache()->getCachedResponse($path, $parameters);
+        if (($cache = $this->client->getCache()->getCachedResponse($path, $parameters) === false)) {
             $cache = json_decode($cache, true);
-            
+
             if (isset($cache) && isset($cache['cachedAt']) && (time() - $cache['cachedAt']) < $options['ttl']) {
                 return $cache;
             }
             if (isset($cache) && isset($cache['lastModified'])) {
-                $this->setHeader('If-Modified-Since', gmdate("D, d M Y H:i:s", $cache['lastModified']) . " GMT");
+                $this->headers->set('If-Modified-Since', gmdate("D, d M Y H:i:s", $cache['lastModified']) . " GMT");
             }
         }
 
-        // Attempt to authenticate application
-        if ($this->getOption('publicKey') !== null && $this->getOption('privateKey') !== null) {
-            $stringToSign = "$httpMethod\n" . $this->getHttpDate(time()) . "\n$path\n";
-            $signature = base64_encode(hash_hmac('sha1', $stringToSign, utf8_encode($this->getOption('privateKey'))));
-
-            $this->setHeader("Authorization", "BNET " . $this->getOption('publicKey') . "+$signature");
-        }
-
         // Create the full url
-        $url = strtr($options['url'], array(
-                ':protocol' => $options['protocol'],
-                ':region' => $options['region'],
+        $url = strtr($options->get('url'), array(
+                ':protocol' => $options->get('protocol'),
+                ':region' => $options->get('region'),
                 ':path' => trim($path, '/'),
             ));
-        if($httpMethod === 'GET') { $url .= "?" . $this->getQueryString($parameters); }
+        if($httpMethod === 'GET' && $parameters) {
+            $url .= "?" . $this->getQueryString($parameters);
+        }
 
         // Get response
         $response = $this->makeRequest($url, $parameters, $httpMethod, $options);
@@ -107,43 +105,31 @@ abstract class Request implements RequestInterface {
         }
 
         //Cache the result
-        if ($this->client->getCache() !== null) {
-            if(isset($response['lastModified'])) {
-                $response['lastModified'] = round($response['lastModified']/1000);
-            }
-
-            $response['cachedAt'] = time();
-            $cache = json_encode($response);
-
-            $this->client->getCache()->setCachedResponse($path, $parameters, $cache);
+        if(isset($response['lastModified'])) {
+            $response['lastModified'] = round($response['lastModified']/1000);
         }
-        
+
+        $response['cachedAt'] = time();
+        $cache = json_encode($response);
+
+        $this->client->getCache()->setCachedResponse($path, $parameters, $cache);
+
         return $response;
     }
 
-    /**
-     * Create an RFC 2822 HTTP-Date from various date values
-     *
-     * @param string|int $date Date to convert
-     *
-     * @return string
-     */
-    public function getHttpDate($date = null) {
+    protected function authenticate($httpMethod, $path)
+    {
+        // Attempt to authenticate application
+        $publicKey = $this->client->options->get('publicKey');
+        $privateKey = $this->client->options->get('privateKey');
+        if ($publicKey !== null && $privateKey !== null) {
+            $stringToSign = "$httpMethod\n" . date(DATE_RFC2822) . "\n$path\n";
+            $signature = base64_encode(hash_hmac('sha1', $stringToSign, utf8_encode($privateKey)));
 
-        if (!is_numeric($date) && $date !== null) {
-            $date = strtotime($date);
+            $this->headers->set("Authorization", "BNET $publicKey+$signature");
         }
-
-        return date(DATE_RFC2822, $date);
     }
 
-    public function getRawHeaders() {
-        $headers = array();
-        foreach ($this->headers as $key => $value) {
-            $headers[] = $key . ': ' . $value;
-        }
-        return $headers;
-    }
 
     /**
      * Return the query string as an array. If $build is true, assemble the query string.
@@ -159,42 +145,10 @@ abstract class Request implements RequestInterface {
             if (is_array($value)) {
                 $queryString[] = $key . '=' . $this->getQueryString($value);
             } else {
-                $queryString[] = $key . '=' . urlencode($value);
+                $queryString[] = $key . '=' . Utilities::encodeUrlParam($value);
             }
         }
 
         return implode('&', $queryString);
-    }
-
-    public function getHeaders() {
-        return $this->headers;
-    }
-
-    public function getHeader($name) {
-        return $this->headers[$name];
-    }
-
-    public function setHeaders($headers) {
-        $this->headers = $headers;
-    }
-
-    public function setHeader($name, $value) {
-        $this->headers[$name] = $value;
-    }
-
-    public function getOption($name) {
-        return $this->client->getOption($name);
-    }
-
-    public function setOption($name, $value) {
-        $this->client->setOption($name, $value);
-    }
-
-    public function getOptions() {
-        return $this->client->getOptions();
-    }
-
-    public function setOptions($options) {
-        return $this->client->setOptions($options);
     }
 }

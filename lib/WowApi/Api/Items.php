@@ -9,6 +9,7 @@ class Items extends Api
     {
         $itemId = (int)$itemId;
         $item = $this->get("data/item/$itemId");
+
         return $item;
     }
 }

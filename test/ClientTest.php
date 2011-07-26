@@ -33,7 +33,7 @@ class ClientTest extends PHPUnit_Framework_TestCase {
                 'publicKey' => null,
                 'privateKey' => null,
                 'ttl' => 3600,
-            ), Shared::Client()->getOptions());
+            ), Shared::Client()->options->all());
     }
 
     //TODO: Finish test when authorization is enabled
