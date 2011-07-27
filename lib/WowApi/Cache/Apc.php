@@ -3,12 +3,8 @@ namespace WowApi\Cache;
 
 use WowApi\Exception\Exception;
 
-class Apc extends Cache
+class Apc extends AbstractCache
 {
-    protected $options = array(
-        'ttl' => 3600,
-    );
-
     public function __construct($options = array())
     {
         if(!function_exists('apc_store')) {
@@ -18,7 +14,7 @@ class Apc extends Cache
     }
 
     public function write($key, $data) {
-        apc_store($key, $data, $this->getOption('ttl'));
+        apc_store($key, $data, $this->options->get('ttl', 3600));
     }
 
     public function read($key) {

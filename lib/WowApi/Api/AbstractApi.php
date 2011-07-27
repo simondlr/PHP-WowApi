@@ -4,8 +4,9 @@ namespace WowApi\Api;
 use WowApi\Request\RequestInterface;
 use WowApi\Exception\ApiException;
 use WowApi\ParameterBag;
+use WowApi\Utilities;
 
-abstract class Api implements ApiInterface
+abstract class AbstractApi implements ApiInterface
 {
     /**
      * @var array Data to be sent
@@ -31,11 +32,7 @@ abstract class Api implements ApiInterface
     }
 
     /**
-     * Make a GET request
-     *
-     * @param string $path API Path
-     *
-     * @return array
+     * {@inheritdoc}
      */
     public function get($path)
     {
@@ -45,11 +42,7 @@ abstract class Api implements ApiInterface
     }
 
     /**
-     * Make a POST request
-     *
-     * @param string $path API Path
-     *
-     * @return array
+     * {@inheritdoc}
      */
     public function post($path)
     {
@@ -59,11 +52,7 @@ abstract class Api implements ApiInterface
     }
 
     /**
-     * Make a PUT request
-     *
-     * @param string $path API Path
-     *
-     * @return array
+     * {@inheritdoc}
      */
     public function put($path)
     {
@@ -73,11 +62,7 @@ abstract class Api implements ApiInterface
     }
 
     /**
-     * Make a DELETE request
-     *
-     * @param string $path API Path
-     *
-     * @return array
+     * {@inheritdoc}
      */
     public function delete($path)
     {
@@ -87,13 +72,7 @@ abstract class Api implements ApiInterface
     }
 
     /**
-     * Filter down the result set on a key basis.
-     *
-     * @param array  $results Results to be filtered
-     * @param string $key     Key to be filtered by
-     * @param mixed  $filter  Filter function
-     *
-     * @return array
+     * {@inheritdoc}
      */
     public function filter($results, $key, $filter)
     {
@@ -125,6 +104,20 @@ abstract class Api implements ApiInterface
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function generatePath($path, $parameters)
+    {
+        $replacements = array();
+
+        foreach($parameters as $key => $parameter) {
+            $replacements[':' . $key] = Utilities::encodeUrlParam($parameter);
+        }
+
+        return strtr($path, $replacements);
+    }
+
+    /**
      * Set multiple values of the query string using an array.
      * A whitelist can be provided to only accept specific keys.
      *
@@ -151,7 +144,7 @@ abstract class Api implements ApiInterface
     protected function setQueryParam($param, $value)
     {
         if (!in_array($param, $this->queryWhitelist)) {
-            $this->parameters[$param] = $value;
+            $this->parameters->set($param, $value);
         }
     }
 
@@ -193,7 +186,7 @@ abstract class Api implements ApiInterface
      *
      * @return null|\WowApi\Request\RequestInterface
      */
-    public function getRequest()
+    protected  function getRequest()
     {
         return $this->client->getRequest();
     }

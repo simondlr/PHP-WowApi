@@ -63,17 +63,33 @@ class Client
         return array('us', 'eu', 'kr', 'tw', 'cn');
     }
 
+    protected function getSupportedLocales($region) {
+        $locales = array(
+            'us' => array('en_US', 'es_MX'),
+            'eu' => array('en_GB', 'es_ES', 'fr_FR', 'ru_RU', 'de_DE'),
+            'lr' => array('ko_kr'),
+            'tw' => array('zh_TW'),
+            'cn' => array('zh_CN'),
+        );
+
+        if(array_key_exists($region, $locales)) {
+            return $locales[$region];
+        }
+
+        return false;
+    }
+
     /**
      * Make an API call
      * @param $path
      * @param array $parameters
-     * @param string $httpMethod
+     * @param string $method
      * @param array $options
      * @return array
      */
-    public function api($path, array $parameters = array(), $httpMethod = 'GET', array $options = array())
+    public function api($path, array $parameters = array(), $method = 'GET', array $options = array())
     {
-        return $this->getRequest()->send($path, $parameters, $httpMethod, $options);
+        return $this->getRequest()->send($path, $method, $parameters);
     }
 
     /**
@@ -90,18 +106,31 @@ class Client
 
     /**
      * Set the region
-     * @throws \InvalidArgumentException
-     * @param $region
+     *
+     * @param string      $region Region
+     * @param null|string $locale Locale
+     *
      * @return void
      */
-    public function setRegion($region)
+    public function setRegion($region, $locale=null)
     {
         $region = strtolower($region);
+        $locales = $this->getSupportedLocales($region);
 
-        if(in_array($region, $this->getSupportedRegions())) {
+        if(in_array($region, $this->getSupportedRegions() && $locales !== false)) {
             $this->options->set('region', $region);
         } else {
             throw new \InvalidArgumentException(sprintf('The region %s is not supported.', $region));
+        }
+
+        if($locale === null) {
+            $this->options->set('locale', $locales[0]);
+        } else {
+            if($locales !== false && in_array($locale, $locales)) {
+                $this->options->set('locale', $locale);
+            } else {
+                throw new \InvalidArgumentException(sprintf('The locale %s is not supported.', $region));
+            }
         }
     }
 
@@ -153,7 +182,7 @@ class Client
 
     /**
      * Returns the character API
-     * @return \WowApi\Api\Character
+     * @return \WowApi\AbstractApi\Character
      */
     public function getCharacterApi()
     {
@@ -166,7 +195,7 @@ class Client
 
     /**
      * Returns the classes API
-     * @return \WowApi\Api\Classes
+     * @return \WowApi\AbstractApi\Classes
      */
     public function getClassesApi()
     {
@@ -179,7 +208,7 @@ class Client
 
     /**
      * Returns the guild API
-     * @return \WowApi\Api\Guild
+     * @return \WowApi\AbstractApi\Guild
      */
     public function getGuildApi()
     {
@@ -192,7 +221,7 @@ class Client
 
     /**
      * Returns the guildPerks API
-     * @return \WowApi\Api\GuildPerks
+     * @return \WowApi\AbstractApi\GuildPerks
      */
     public function getGuildPerksApi()
     {
@@ -205,7 +234,7 @@ class Client
 
     /**
      * Returns the guildRewards API
-     * @return \WowApi\Api\GuildRewards
+     * @return \WowApi\AbstractApi\GuildRewards
      */
     public function getGuildRewardsApi()
     {
@@ -218,7 +247,7 @@ class Client
 
     /**
      * Returns the races API
-     * @return \WowApi\Api\Races
+     * @return \WowApi\AbstractApi\Races
      */
     public function getRacesApi()
     {
@@ -231,7 +260,7 @@ class Client
 
     /**
      * Returns the realm API
-     * @return \WowApi\Api\Realm
+     * @return \WowApi\AbstractApi\Realm
      */
     public function getRealmApi()
     {
@@ -244,7 +273,7 @@ class Client
 
     /**
      * Returns the item API
-     * @return \WowApi\Api\Items
+     * @return \WowApi\AbstractApi\Items
      */
     public function getItemsApi()
     {

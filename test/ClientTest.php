@@ -25,22 +25,30 @@ class ClientTest extends PHPUnit_Framework_TestCase {
         $this->assertInstanceOf('\WowApi\Api\Realm', Shared::Client()->getRealmApi());
     }
 
-    function testDefaults() {
-        $this->assertEquals(array(
-                'protocol' => 'http',
-                'region' => 'us',
-                'url' => ':protocol://:region.battle.net/api/wow/:path',
-                'publicKey' => null,
-                'privateKey' => null,
-                'ttl' => 3600,
-            ), Shared::Client()->options->all());
-    }
-
     //TODO: Finish test when authorization is enabled
     function testAuthentication()
     {
         Shared::Client()->authenticate(PUBLIC_KEY, PRIVATE_KEY);
         Shared::Client()->api('realm/status');
+    }
+
+    function testRegionsAndLocales()
+    {
+        Shared::Client()->setRegion('us');
+        $this->assertEquals(Shared::Client()->options->get('region'), 'us');
+        $this->assertEquals(Shared::Client()->options->get('locale'), 'en_US');
+
+        Shared::Client()->setRegion('us', 'es_MX');
+        $this->assertEquals(Shared::Client()->options->get('region'), 'us');
+        $this->assertEquals(Shared::Client()->options->get('locale'), 'es_MX');
+
+        Shared::Client()->setRegion('eu', 'en_GB');
+        $this->assertEquals(Shared::Client()->options->get('region'), 'eu');
+        $this->assertEquals(Shared::Client()->options->get('locale'), 'en_GB');
+
+        Shared::Client()->setRegion('cn');
+        $this->assertEquals(Shared::Client()->options->get('region'), 'cn');
+        $this->assertEquals(Shared::Client()->options->get('locale'), 'zh_CN');
     }
 }
 

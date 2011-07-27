@@ -9,7 +9,7 @@ use WowApi\Cache\CacheInterface;
 use WowApi\ParameterBag;
 use WowApi\Utilities;
 
-abstract class Request implements RequestInterface {
+abstract class AbstractRequest implements RequestInterface {
     /**
      * @var null|\WowApi\Request\HeaderBag
      */
@@ -24,7 +24,8 @@ abstract class Request implements RequestInterface {
         $this->headers = new HeaderBag(array(
             'Expect'            => '',
             'Accept'            => 'application/json',
-            'Accept-Encoding'   => 'gzip',
+            'Accept-Charset'    => 'UTF-8',
+            'Accept-Encoding'   => 'compress, gzip',
             'Content-Type'      => 'application/json',
             'User-Agent'        => 'PHP WowApi (http://github.com/dancannon/PHP-WowApi)',
         ));
@@ -36,29 +37,25 @@ abstract class Request implements RequestInterface {
     }
 
     public function get($path, array $parameters = array()) {
-        return $this->send($path, $parameters, 'GET');
+        return $this->send($path, 'GET', $parameters);
     }
 
     public function post($path, array $parameters = array()) {
-        return $this->send($path, $parameters, 'POST');
+        return $this->send($path, 'POST', $parameters);
     }
 
     public function put($path, array $parameters = array()) {
-        return $this->send($path, $parameters, 'PUT');
+        return $this->send($path, 'PUT', $parameters);
     }
 
     public function delete($path, array $parameters = array()) {
-        return $this->send($path, $parameters, 'DELETE');
+        return $this->send($path, 'DELETE', $parameters);
     }
 
-    public function send($path, array $parameters = array(), $httpMethod = 'GET') {
-        $options = $this->client->options;
-
+    public function send($path, $method = 'GET', array $parameters = array()) {
         // Check the cache
-        if (($cache = $this->client->getCache()->getCachedResponse($path, $parameters) === false)) {
-            $cache = json_decode($cache, true);
-
-            if (isset($cache) && isset($cache['cachedAt']) && (time() - $cache['cachedAt']) < $options['ttl']) {
+        if($cache = $this->isCached($path, $parameters)) {
+            if ($cache && isset($cache['cachedAt']) && (time() - $cache['cachedAt']) < $this->client->options['ttl']) {
                 return $cache;
             }
             if (isset($cache) && isset($cache['lastModified'])) {
@@ -66,28 +63,21 @@ abstract class Request implements RequestInterface {
             }
         }
 
-        // Create the full url
-        $url = strtr($options->get('url'), array(
-                ':protocol' => $options->get('protocol'),
-                ':region' => $options->get('region'),
-                ':path' => trim($path, '/'),
-            ));
-        if($httpMethod === 'GET' && $parameters) {
-            $url .= "?" . $this->getQueryString($parameters);
-        }
-
         // Get response
-        $response = $this->makeRequest($url, $parameters, $httpMethod, $options);
+        $url      = $this->getUrl($path, $method, $parameters);
+        $response = $this->makeRequest($url, $method, $parameters);
         $httpCode = $response['headers']['http_code'];
-        //Check for 304 Not Modified header
+
+
         if (isset($cache) && $httpCode === 304) {
             return $cache;
         } else {
-            if (strpos($response['headers']['content_type'], 'application/json') !== false) {
-                $response = json_decode($response['response'], true);
-            } else {
-                $response = (array)$response['response'];
+            $response = json_decode($response['response'], true);
+            if(!$response) {
+
+                throw new ApiException("Error parsing response");
             }
+
             // Check for errors
             if($httpCode === 404) {
                 if (isset($response['reason'])) {
@@ -95,7 +85,7 @@ abstract class Request implements RequestInterface {
                 } else {
                     throw new NotFoundException("Resource not found");
                 }
-            } elseif ((isset($response['status']) && $response['status'] === 'nok') || ($httpCode !== 200)) {
+            } elseif ($httpCode !== 200) {
                 if (isset($response['reason'])) {
                     throw new ApiException($response['reason'], $httpCode);
                 } else {
@@ -104,7 +94,26 @@ abstract class Request implements RequestInterface {
             }
         }
 
-        //Cache the result
+        $this->cache($path, $parameters, $response);
+
+        return $response;
+    }
+
+    protected function isCached($path, $parameters)
+    {
+        if (($cache = $this->client->getCache()->getCachedResponse($path, $parameters) === false)) {
+            $cache = json_decode($cache, true);
+
+            if($cache) {
+                return $cache;
+            }
+        }
+
+        return false;
+    }
+
+    protected function cache($path, $parameters, $response)
+    {
         if(isset($response['lastModified'])) {
             $response['lastModified'] = round($response['lastModified']/1000);
         }
@@ -113,11 +122,9 @@ abstract class Request implements RequestInterface {
         $cache = json_encode($response);
 
         $this->client->getCache()->setCachedResponse($path, $parameters, $cache);
-
-        return $response;
     }
 
-    protected function authenticate($httpMethod, $path)
+    protected function signRequest($httpMethod, $path)
     {
         // Attempt to authenticate application
         $publicKey = $this->client->options->get('publicKey');
@@ -130,6 +137,20 @@ abstract class Request implements RequestInterface {
         }
     }
 
+    protected function getUrl($path, $method, $parameters)
+    {
+        $replacements = array();
+        $replacements[':protocol'] = $this->client->options->get('protocol');
+        $replacements[':region']   = $this->client->options->get('region');
+        $replacements[':path']     = trim($path, '/');
+
+        $url = strtr($this->client->options->get('url'), $replacements);
+        if($method === 'GET' && $parameters) {
+            $url .= $this->getQueryString($parameters);
+        }
+        return $url;
+    }
+
 
     /**
      * Return the query string as an array. If $build is true, assemble the query string.
@@ -138,7 +159,7 @@ abstract class Request implements RequestInterface {
      * @param array $parameters
      * @return string
      */
-    public function getQueryString(array $parameters) {
+    protected  function getQueryString(array $parameters) {
         $queryString = array();
 
         foreach ($parameters as $key => $value) {
@@ -149,6 +170,6 @@ abstract class Request implements RequestInterface {
             }
         }
 
-        return implode('&', $queryString);
+        return '?' . implode('&', $queryString);
     }
 }

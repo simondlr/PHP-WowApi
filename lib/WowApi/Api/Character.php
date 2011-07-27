@@ -3,7 +3,7 @@ namespace WowApi\Api;
 
 use WowApi\Utilities;
 
-class Character extends Api
+class Character extends AbstractApi
 {
     public function getCharacter($server, $character, array $fields = array())
     {

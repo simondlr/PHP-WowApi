@@ -40,21 +40,12 @@ class Utilities
         return sprintf('http://%s.media.blizzard.com/wow/icons/%d/%s.jpg', $region, $size, $icon);
     }
 
-    public static function encodeUrlParam($input)
+    public static function encodeUrlParam($param)
     {
-        if(is_array($input)) {
-            $return = array();
-            foreach($input as $key => $item) {
-                $return[$key] = self::encodeUrlParam($item);
-            }
+        //Encode spaces separately
+        $param = str_replace(' ', '-', $param);
+        $param = str_replace('--', '-', $param);
 
-            return $return;
-        } else {
-            $input     =     str_replace(' ', '-', $input);
-            $input     =     str_replace('--', '-', $input);
-
-            //$input = strtr($input, self::$normalizedChars);
-            return urlencode($input);
-        }
+        return urlencode($param);
     }
 }

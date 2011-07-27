@@ -3,7 +3,7 @@ namespace WowApi\Api;
 
 use WowApi\Exception\ApiException;
 
-class Realm extends Api
+class Realm extends AbstractApi
 {
 
     /**
@@ -72,7 +72,6 @@ class Realm extends Api
     public function getRealm($realm)
     {
         $response = $this->getRealms(array($realm));
-
         return $response !== false ? $response[0] : false;
     }
 

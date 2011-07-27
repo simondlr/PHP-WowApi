@@ -5,7 +5,7 @@ use WowApi\Client;
 class RealmTest extends PHPUnit_Framework_TestCase
 {
     /**
-     * @var \WowApi\Api\Realm
+     * @var \WowApi\AbstractApi\Realm
      */
     protected $api;
 

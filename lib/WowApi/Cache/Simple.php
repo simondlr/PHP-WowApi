@@ -3,10 +3,8 @@ namespace WowApi\Cache;
 
 use WowApi\Exception\Exception;
 
-class Simple extends Cache
+class Simple extends AbstractCache
 {
-    protected $options = array();
-
     protected $cache;
 
     public function __construct($options = array())

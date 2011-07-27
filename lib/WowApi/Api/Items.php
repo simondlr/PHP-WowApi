@@ -3,7 +3,7 @@ namespace WowApi\Api;
 
 use WowApi\Utilities;
 
-class Items extends Api
+class Items extends AbstractApi
 {
     public function getItem($itemId)
     {

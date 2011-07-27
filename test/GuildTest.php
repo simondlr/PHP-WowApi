@@ -5,7 +5,7 @@ use WowApi\Client;
 class GuildTest extends PHPUnit_Framework_TestCase
 {
     /**
-     * @var \WowApi\Api\Guild
+     * @var \WowApi\AbstractApi\Guild
      */
     protected $api;
 

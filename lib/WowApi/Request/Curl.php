@@ -4,24 +4,24 @@ namespace WowApi\Request;
 use WowApi\Exception\Exception;
 use WowApi\Exception\RequestException;
 use WowApi\ParameterBag;
+use WowApi\Utilities;
 
 if (!function_exists('curl_init')) {
     throw new Exception('This API client needs the cURL PHP extension.');
 }
 
-class Curl extends Request
+class Curl extends AbstractRequest
 {
     /**
      * Send a request to the server, receive a response
      *
      * @param  string $url Request url
+     * @param string $method HTTP method to use
      * @param array $parameters Parameters
-     * @param string $httpMethod HTTP method to use
-     * @param array $options Request options
      *
-     * @return string HTTP response
+     * @return array HTTP response
      */
-    public function makeRequest($url, array $parameters = array(), $httpMethod = 'GET')
+    public function makeRequest($url, $method='GET', array $parameters=array())
     {
         //Set cURL options
         $curlOptions = array(
@@ -41,7 +41,7 @@ class Curl extends Request
 
 		// Prepare Data
         if (!empty($parameters)) {
-            switch($httpMethod) {
+            switch($method) {
                 case 'POST':
                     $curlOptions[CURLOPT_POST] = true;
                     $curlOptions[CURLOPT_POSTFIELDS] = Utilities::encodeUrlParam($parameters);
@@ -58,18 +58,20 @@ class Curl extends Request
         }
 
         $response = $this->doCurlCall($curlOptions);
+
 		if ($response['response'] === false) {
-			$e = new RequestException($response['errorMessage'], $response['errorNumber']);
-            throw $e;
-		}else{
-			return $response;
+			throw new RequestException($response['errorMessage'], $response['errorNumber']);
 		}
+
+        return $response;
     }
 
     /**
      * Execute the query
-     * @param array $curlOptions
-     * @return array
+     *
+     * @param array $curlOptions Curl Options
+     *
+     * @return array Curl Response
      */
     protected function doCurlCall(array $curlOptions)
     {

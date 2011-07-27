@@ -1,7 +1,7 @@
 <?php
 namespace WowApi\Api;
 
-class GuildRewards extends Api
+class GuildRewards extends AbstractApi
 {
     public function getRewards()
     {

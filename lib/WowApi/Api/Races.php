@@ -1,7 +1,7 @@
 <?php
 namespace WowApi\Api;
 
-class Races extends Api
+class Races extends AbstractApi
 {
     public function getRaces()
     {

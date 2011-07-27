@@ -1,7 +1,7 @@
 <?php
 namespace WowApi\Api;
 
-class GuildPerks extends Api
+class GuildPerks extends AbstractApi
 {
     public function getPerks()
     {

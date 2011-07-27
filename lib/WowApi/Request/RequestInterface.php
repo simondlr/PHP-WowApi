@@ -16,7 +16,7 @@ interface RequestInterface
      *
      * @return string HTTP response
      */
-    function makeRequest($url, array $parameters = array(), $httpMethod = 'GET');
+    function makeRequest($url, $method='GET', array $parameters=array());
 
     /**
      * Make a GET request
@@ -59,7 +59,7 @@ interface RequestInterface
      * @param array $options
      * @return array
      */
-    function send($path, array $parameters = array(), $httpMethod = 'GET');
+    function send($path, $method='GET', array $parameters=array());
     /**
      * @abstract
      * @param \WowApi\Client $client

@@ -1,47 +1,62 @@
 <?php
 namespace WowApi\Api;
 
-use \WowApi\Request\RequestInterface;
+use WowApi\Request\RequestInterface;
 
 interface ApiInterface
 {
     /**
      * Make a GET request
-     * @param $path
-     * @param array $options
+     *
+     * @param string $path API Path
      */
-    public function get($path, array $options = array());
+    public function get($path);
 
     /**
      * Make a POST request
-     * @param $path
-     * @param array $options
+     *
+     * @param string $path API Path
+     *
+     * @return array
      */
-    public function post($path, array $options = array());
+    public function post($path);
 
     /**
      * Make a PUT request
-     * @param $path
-     * @param array $options
-     * @return void
+     *
+     * @param string $path API Path
+     *
+     * @return array
      */
-    public function put($path, array $options = array());
+    public function put($path);
 
     /**
      * Make a DELETE request
-     * @param $path
-     * @param array $options
-     * @return void
+     *
+     * @param string $path API Path
+     *
+     * @return array
      */
-    public function delete($path, array $options = array());
+    public function delete($path);
 
     /**
      * Filter down the result set on a key basis.
      *
-     * @param array $results
-     * @param string $key
-     * @param mixed $filter
+     * @param array  $results Results to be filtered
+     * @param string $key     Key to be filtered by
+     * @param mixed  $filter  Filter function
+     *
      * @return array
      */
     public function filter($results, $key, $filter);
+
+    /**
+     * Generate the API path ensuring that all parameters are encoded correctly
+     *
+     * @param $path       API Path
+     * @param $parameters Parameters
+     *
+     * @return void
+     */
+    public function generatePath($path, $parameters);
 }

@@ -6,7 +6,7 @@ class CharacterTest extends PHPUnit_Framework_TestCase
 {
 
     /**
-     * @var \WowApi\Api\Character
+     * @var \WowApi\AbstractApi\Character
      */
     protected $api;
 
@@ -17,7 +17,7 @@ class CharacterTest extends PHPUnit_Framework_TestCase
 
     protected function tearDown()
     {
-        
+
     }
 
     function testGetCharacter()

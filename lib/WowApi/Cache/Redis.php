@@ -3,25 +3,22 @@ namespace WowApi\Cache;
 
 use WowApi\Exception\Exception;
 
-class Redis extends Cache
+class Redis extends AbstractCache
 {
     /**
      * @var \Predis\Client
      */
     protected $redis;
 
-    protected $options = array(
-        'ttl' => 3600,
-    );
-
     public function __construct(\Predis\Client $redis, $options = array())
     {
-        $this->redis = $redis;
         parent::__construct($options);
+
+        $this->redis = $redis;
     }
 
     public function write($key, $data) {
-        $this->redis->setex($key, $this->getOption('ttl'), $data);
+        $this->redis->setex($key, $this->getOption('ttl', 3600), $data);
     }
 
     public function read($key) {

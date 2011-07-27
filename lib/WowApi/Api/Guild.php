@@ -3,7 +3,7 @@ namespace WowApi\Api;
 
 use WowApi\Utilities;
 
-class Guild extends Api
+class Guild extends AbstractApi
 {
     public function getGuild($server, $guild, array $fields = array())
     {
