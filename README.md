@@ -63,7 +63,7 @@ You can also pass an array of options the client class to configure the library.
 - publicKey
 - privateKey
 
-If you wish to change the gaming region you should use the setRegion method as shown below, the following regions are available (us, eu, kr, tw, cn):
+If you wish to change the gaming region you should use the setRegion method as shown below, the following regions are available (us, eu, kr, tw, cn)
 
 ``` php
 <?php
@@ -75,6 +75,20 @@ $api = new Client($request);
 $api->setRequest($request);
 $api->setRegion('eu');
 ```
+
+You can also set the locale, to view the options view the API documentation:
+
+``` php
+<?php
+use WowApi\Client;
+use WowApi\Request\Curl;
+
+$request = new Curl();
+$api = new Client($request);
+$api->setRequest($request);
+$api->setRegion('eu', 'en_GB');
+```
+
 
 
 ### Caching ###
@@ -141,6 +155,8 @@ $api->setRequest($request);
 $api->getGuildApi->getGuild('REALMNAME', 'GUILDNAME');
 # Fetch optional fields
 $api->getGuildApi->getGuild('REALMNAME', 'GUILDNAME', array('members'));
+# Fetch all fields
+$api->getGuildApi->getGuild('REALMNAME', 'GUILDNAME', true);
 ```
 
 #### Realm APIs
