@@ -7,8 +7,9 @@ class Items extends AbstractApi
 {
     public function getItem($itemId)
     {
-        $itemId = (int)$itemId;
-        $item = $this->get("data/item/$itemId");
+        $item = $this->get($this->generatePath('data/item/:itemId', array(
+            'itemid' => (int)$itemId)
+        ));
 
         return $item;
     }

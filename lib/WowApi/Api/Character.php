@@ -3,15 +3,18 @@ namespace WowApi\Api;
 
 use WowApi\Utilities;
 
-class Character extends AbstractApi
+class Character extends AbstractProfileApi
 {
-    public function getCharacter($server, $character, array $fields = array())
-    {
-        $server = Utilities::encodeUrlParam($server);
-        $character = Utilities::encodeUrlParam($character);
+    protected $fieldsWhitelist = array('guild', 'stats', 'talents', 'items', 'reputation', 'titles', 'professions', 'appearance', 'companions', 'mounts', 'pets', 'achievments', 'progression');
 
-        $this->setQueryParam('fields', implode(',', $fields));
-        $character = $this->get("character/$server/$character");
+    public function getCharacter($realm, $character, $fields = array())
+    {
+        $this->setFields($fields);
+
+        $character = $this->get($this->generatePath('character/:realm/:character', array(
+            'realm' => $realm,
+            'character' => $character,
+        )));
 
         return $character;
     }

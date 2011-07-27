@@ -184,7 +184,7 @@ class Client
 
     /**
      * Returns the character API
-     * @return \WowApi\AbstractApi\Character
+     * @return \WowApi\Api\Character
      */
     public function getCharacterApi()
     {
@@ -197,7 +197,7 @@ class Client
 
     /**
      * Returns the classes API
-     * @return \WowApi\AbstractApi\Classes
+     * @return \WowApi\Api\Classes
      */
     public function getClassesApi()
     {
@@ -210,7 +210,7 @@ class Client
 
     /**
      * Returns the guild API
-     * @return \WowApi\AbstractApi\Guild
+     * @return \WowApi\Api\Guild
      */
     public function getGuildApi()
     {
@@ -223,7 +223,7 @@ class Client
 
     /**
      * Returns the guildPerks API
-     * @return \WowApi\AbstractApi\GuildPerks
+     * @return \WowApi\Api\GuildPerks
      */
     public function getGuildPerksApi()
     {
@@ -236,7 +236,7 @@ class Client
 
     /**
      * Returns the guildRewards API
-     * @return \WowApi\AbstractApi\GuildRewards
+     * @return \WowApi\Api\GuildRewards
      */
     public function getGuildRewardsApi()
     {
@@ -249,7 +249,7 @@ class Client
 
     /**
      * Returns the races API
-     * @return \WowApi\AbstractApi\Races
+     * @return \WowApi\Api\Races
      */
     public function getRacesApi()
     {
@@ -262,7 +262,7 @@ class Client
 
     /**
      * Returns the realm API
-     * @return \WowApi\AbstractApi\Realm
+     * @return \WowApi\Api\Realm
      */
     public function getRealmApi()
     {
@@ -275,7 +275,7 @@ class Client
 
     /**
      * Returns the item API
-     * @return \WowApi\AbstractApi\Items
+     * @return \WowApi\Api\Items
      */
     public function getItemsApi()
     {

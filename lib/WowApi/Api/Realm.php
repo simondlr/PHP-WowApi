@@ -5,6 +5,7 @@ use WowApi\Exception\ApiException;
 
 class Realm extends AbstractApi
 {
+    protected $queryWhitelist = array('realms');
 
     /**
      * Constants for realm type.

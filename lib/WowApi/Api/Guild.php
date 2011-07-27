@@ -3,15 +3,18 @@ namespace WowApi\Api;
 
 use WowApi\Utilities;
 
-class Guild extends AbstractApi
+class Guild extends AbstractProfileApi
 {
-    public function getGuild($server, $guild, array $fields = array())
-    {
-        $server = Utilities::encodeUrlParam($server);
-        $guild = Utilities::encodeUrlParam($guild);
+    protected $fieldsWhitelist = array('members', 'achievements');
 
-        $this->setQueryParam('fields', implode(',', $fields));
-        $guild = $this->get("/guild/$server/$guild");
+    public function getGuild($realm, $guild, $fields = array())
+    {
+        $this->setFields($fields);
+
+        $guild = $this->get($this->generatePath('guild/:realm/:guild', array(
+            'realm' => $realm,
+            'guild' => $guild,
+        )));
 
         return $guild;
     }

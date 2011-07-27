@@ -111,7 +111,7 @@ abstract class AbstractApi implements ApiInterface
         $replacements = array();
 
         foreach($parameters as $key => $parameter) {
-            $replacements[':' . $key] = Utilities::encodeUrlParam($parameter);
+            $replacements[':' . $key] = Utilities::urlencode($parameter);
         }
 
         return strtr($path, $replacements);
@@ -143,9 +143,11 @@ abstract class AbstractApi implements ApiInterface
      */
     protected function setQueryParam($param, $value)
     {
-        if (!in_array($param, $this->queryWhitelist)) {
-            $this->parameters->set($param, $value);
+        if ( !in_array($param, $this->queryWhitelist) ) {
+            throw new \InvalidArgumentException(sprintf('The query parameter `%s` was not recognized.', $param));
         }
+
+        $this->parameters->set($param, $value);
     }
 
     /**
