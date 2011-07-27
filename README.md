@@ -1,4 +1,4 @@
-# PHP WowApi ![project status](http://stillmaintained.com/snc/SncRedisBundle.png) #
+# PHP WowApi ![project status](http://stillmaintained.com/dancannon/PHP-WowApi.png) #
 
 PHP-WowApi is a PHP (>= 5.3) API client for Blizzard's Community Platform API
 **Note**: This library is still in development (even though Blizzard have released their own client) and tests will be added soon.
@@ -16,7 +16,7 @@ PHP-WowApi is a PHP (>= 5.3) API client for Blizzard's Community Platform API
     - Realm
     - Items
 - Supports application authentication
-- Includes a cache to take advantage or LastModified headers
+- Includes a cache to take advantage of LastModified headers
 **Note**: Not all APIs are currently active, check the API forums for more info
 
 ## Installing ##
@@ -88,8 +88,6 @@ $api = new Client($request);
 $api->setRequest($request);
 $api->setRegion('eu', 'en_GB');
 ```
-
-
 
 ### Caching ###
 
