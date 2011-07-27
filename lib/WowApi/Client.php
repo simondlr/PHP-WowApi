@@ -121,7 +121,7 @@ class Client
         if(in_array($region, $this->getSupportedRegions()) && $locales !== false) {
             $this->options->set('region', $region);
         } else {
-            throw new \InvalidArgumentException(sprintf('The region %s is not supported.', $region));
+            throw new \InvalidArgumentException(sprintf('The region `%s` is not supported.', $region));
         }
 
         if($locale === null) {
@@ -130,7 +130,7 @@ class Client
             if($locales !== false && in_array($locale, $locales)) {
                 $this->options->set('locale', $locale);
             } else {
-                throw new \InvalidArgumentException(sprintf('The locale %s is not supported.', $region));
+                throw new \InvalidArgumentException(sprintf('The locale `%s` for region `%s` is not supported.', $locale, $region));
             }
         }
     }

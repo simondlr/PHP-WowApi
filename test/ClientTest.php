@@ -67,6 +67,26 @@ class ClientTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals($client->options->get('region'), 'cn');
         $this->assertEquals($client->options->get('locale'), 'zh_CN');
     }
+
+    /**
+     * @expectedException        \InvalidArgumentException
+     * @expectedExceptionMessage The region `doesntexist` is not supported.
+     */
+    function testInvalidRegion()
+    {
+        $client = Shared::Client();
+        $client->setRegion('doesntExist');
+    }
+
+    /**
+     * @expectedException        \InvalidArgumentException
+     * @expectedExceptionMessage The locale `doesntExist` for region `us` is not supported.
+     */
+    function testInvalidLocale()
+    {
+        $client = Shared::Client();
+        $client->setRegion('us', 'doesntExist');
+    }
 }
 
 ?>
