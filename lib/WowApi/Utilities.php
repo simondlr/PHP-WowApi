@@ -40,12 +40,43 @@ class Utilities
         return sprintf('http://%s.media.blizzard.com/wow/icons/%d/%s.jpg', $region, $size, $icon);
     }
 
-    public static function encodeUrlParam($param)
+    public static function urlencode($input)
     {
-        //Encode spaces separately
-        $param = str_replace(' ', '-', $param);
-        $param = str_replace('--', '-', $param);
+        if(is_array($input)) {
+            return array_map(array('\WowApi\Utilities', 'urlencode'), $input);
+        } elseif (is_scalar($input)) {
+            //Remove all spaces
+            $input = str_replace(' ', '-', $input);
 
-        return urlencode($param);
+            return urlencode($input);
+        } else {
+            return '';
+        }
+    }
+
+    public static function build_http_query($params) {
+        if (!$params) {
+            return '';
+        }
+
+        // Urlencode both keys and values
+        $keys   = self::urlencode(array_keys($params));
+        $values = self::urlencode(array_values($params));
+        $params = array_combine($keys, $values);
+
+        // Parameters are sorted by name, using lexicographical byte value ordering.
+        uksort($params, 'strcmp');
+
+        $pairs = array();
+        foreach ($params as $parameter => $value) {
+            if (is_array($value)) {
+                $pairs[] = $parameter . '=' . implode(',', $value);
+            } else {
+                $pairs[] = $parameter . '=' . $value;
+            }
+        }
+        // For each parameter, the name is separated from the corresponding value by an '=' character (ASCII code 61)
+        // Each name-value pair is separated by an '&' character (ASCII code 38)
+        return '?' . implode('&', $pairs);
     }
 }

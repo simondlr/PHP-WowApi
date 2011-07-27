@@ -65,7 +65,13 @@ abstract class AbstractRequest implements RequestInterface {
 
         //Make request
         $path     = $this->getFullPath($path);
-        $url      = $this->getUrl($path, $method, $parameters);
+
+        if($method === 'GET') {
+            $url = $this->getUrl($path, $parameters);
+        } else {
+            $url = $this->getUrl($path);
+        }
+
         $this->signRequest($path, $method);
         $response = $this->makeRequest($url, $method, $parameters);
         $httpCode = $response['headers']['http_code'];
@@ -150,41 +156,21 @@ abstract class AbstractRequest implements RequestInterface {
         return strtr($this->client->options->get('fullPath'), $replacements);
     }
 
-    protected function getUrl($path, $method, $parameters)
+    protected function getUrl($path, $queryParams=array())
     {
         $replacements = array();
         $replacements[':protocol'] = $this->client->options->get('protocol');
         $replacements[':region']   = $this->client->options->get('region');
         $replacements[':fullPath'] = $path;
 
-
         $url = strtr($this->client->options->get('url'), $replacements);
-        if($method === 'GET' && $parameters) {
-            $url .= $this->getQueryString($parameters);
+
+        //Add locale to query parameters
+        $queryParams['locale'] = $this->client->options->get('locale');
+        if(!empty($queryParams)) {
+            $url .= Utilities::build_http_query($queryParams);
         }
 
         return $url;
-    }
-
-
-    /**
-     * Return the query string as an array. If $build is true, assemble the query string.
-     *
-     * @access public
-     * @param array $parameters
-     * @return string
-     */
-    protected  function getQueryString(array $parameters) {
-        $queryString = array();
-
-        foreach ($parameters as $key => $value) {
-            if (is_array($value)) {
-                $queryString[] = $key . '=' . $this->getQueryString($value);
-            } else {
-                $queryString[] = $key . '=' . Utilities::encodeUrlParam($value);
-            }
-        }
-
-        return '?' . implode('&', $queryString);
     }
 }

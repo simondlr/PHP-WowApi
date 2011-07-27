@@ -48,6 +48,7 @@ class Client
         $this->options = new ParameterBag(array(
             'protocol'   => 'http',
             'region'     => 'us',
+            'locale'     => 'en_US',
             'url'        => ':protocol://:region.battle.net:fullPath',
             'fullPath'   => '/api/wow/:path',
             'publicKey'  => null,
