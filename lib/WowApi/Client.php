@@ -117,7 +117,7 @@ class Client
         $region = strtolower($region);
         $locales = $this->getSupportedLocales($region);
 
-        if(in_array($region, $this->getSupportedRegions() && $locales !== false)) {
+        if(in_array($region, $this->getSupportedRegions()) && $locales !== false) {
             $this->options->set('region', $region);
         } else {
             throw new \InvalidArgumentException(sprintf('The region %s is not supported.', $region));

@@ -28,27 +28,32 @@ class ClientTest extends PHPUnit_Framework_TestCase {
     //TODO: Finish test when authorization is enabled
     function testAuthentication()
     {
-        Shared::Client()->authenticate(PUBLIC_KEY, PRIVATE_KEY);
-        Shared::Client()->api('realm/status');
+        $client = Shared::Client();
+        $client->authenticate(PUBLIC_KEY, PRIVATE_KEY);
+        $client->api('realm/status');
     }
 
     function testRegionsAndLocales()
     {
-        Shared::Client()->setRegion('us');
-        $this->assertEquals(Shared::Client()->options->get('region'), 'us');
-        $this->assertEquals(Shared::Client()->options->get('locale'), 'en_US');
+        $client = Shared::Client();
+        $client->setRegion('us');
+        $this->assertEquals($client->options->get('region'), 'us');
+        $this->assertEquals($client->options->get('locale'), 'en_US');
 
-        Shared::Client()->setRegion('us', 'es_MX');
-        $this->assertEquals(Shared::Client()->options->get('region'), 'us');
-        $this->assertEquals(Shared::Client()->options->get('locale'), 'es_MX');
+        $client = Shared::Client();
+        $client->setRegion('us', 'es_MX');
+        $this->assertEquals($client->options->get('region'), 'us');
+        $this->assertEquals($client->options->get('locale'), 'es_MX');
 
-        Shared::Client()->setRegion('eu', 'en_GB');
-        $this->assertEquals(Shared::Client()->options->get('region'), 'eu');
-        $this->assertEquals(Shared::Client()->options->get('locale'), 'en_GB');
+        $client = Shared::Client();
+        $client->setRegion('eu', 'en_GB');
+        $this->assertEquals($client->options->get('region'), 'eu');
+        $this->assertEquals($client->options->get('locale'), 'en_GB');
 
-        Shared::Client()->setRegion('cn');
-        $this->assertEquals(Shared::Client()->options->get('region'), 'cn');
-        $this->assertEquals(Shared::Client()->options->get('locale'), 'zh_CN');
+        $client = Shared::Client();
+        $client->setRegion('cn');
+        $this->assertEquals($client->options->get('region'), 'cn');
+        $this->assertEquals($client->options->get('locale'), 'zh_CN');
     }
 }
 
