@@ -25,12 +25,24 @@ class ClientTest extends PHPUnit_Framework_TestCase {
         $this->assertInstanceOf('\WowApi\Api\Realm', Shared::Client()->getRealmApi());
     }
 
-    //TODO: Finish test when authorization is enabled
-    function testAuthentication()
+    function testValidApplicationAuthentication()
     {
         $client = Shared::Client();
         $client->authenticate(PUBLIC_KEY, PRIVATE_KEY);
-        $client->api('realm/status');
+        $result = $client->api('realm/status');
+        $this->assertNotEquals(false, $result);
+    }
+
+    /**
+     * @expectedException        WowApi\Exception\ApiException
+     * @expectedExceptionMessage Invalid Application
+     */
+    function testInvalidApplicationAuthentication()
+    {
+        $client = Shared::Client();
+        $client->authenticate('InvalidPublicKey', 'InvalidPrivateKey');
+        $result = $client->api('realm/status');
+        $this->assertEquals(false, $result);
     }
 
     function testRegionsAndLocales()

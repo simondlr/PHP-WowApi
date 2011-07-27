@@ -25,6 +25,7 @@ class Curl extends AbstractRequest
     {
         //Set cURL options
         $curlOptions = array(
+            CURLINFO_HEADER_OUT            => true,
             CURLOPT_URL            => $url,
             CURLOPT_TIMEOUT        => 10,
             CURLOPT_ENCODING       => "gzip",
@@ -37,7 +38,7 @@ class Curl extends AbstractRequest
         if(isset($options['curlOptions'])) {
             $curlOptions = array_merge($this->client->options->get('curlOptions'), $curlOptions);
         }
-        $curlOptions[CURLOPT_HTTPHEADER] = $this->headers->all();
+        $curlOptions[CURLOPT_HTTPHEADER] = $this->headers->getHeaders();
 
 		// Prepare Data
         if (!empty($parameters)) {

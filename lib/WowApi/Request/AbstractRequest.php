@@ -23,9 +23,9 @@ abstract class AbstractRequest implements RequestInterface {
     public function __construct() {
         $this->headers = new HeaderBag(array(
             'Expect'            => '',
-            'Accept'            => 'application/json',
             'Accept-Charset'    => 'UTF-8',
             'Accept-Encoding'   => 'compress, gzip',
+            'Accept'            => 'application/json',
             'Content-Type'      => 'application/json',
             'User-Agent'        => 'PHP WowApi (http://github.com/dancannon/PHP-WowApi)',
         ));
@@ -59,12 +59,14 @@ abstract class AbstractRequest implements RequestInterface {
                 return $cache;
             }
             if (isset($cache) && isset($cache['lastModified'])) {
-                $this->headers->set('If-Modified-Since', gmdate("D, d M Y H:i:s", $cache['lastModified']) . " GMT");
+                $this->headers->set('If-Modified-Since', date(DATE_RFC1123, $cache['lastModified']));
             }
         }
 
-        // Get response
+        //Make request
+        $path     = $this->getFullPath($path);
         $url      = $this->getUrl($path, $method, $parameters);
+        $this->signRequest($path, $method);
         $response = $this->makeRequest($url, $method, $parameters);
         $httpCode = $response['headers']['http_code'];
 
@@ -124,17 +126,28 @@ abstract class AbstractRequest implements RequestInterface {
         $this->client->getCache()->setCachedResponse($path, $parameters, $cache);
     }
 
-    protected function signRequest($httpMethod, $path)
+    protected function signRequest($path, $method)
     {
         // Attempt to authenticate application
         $publicKey = $this->client->options->get('publicKey');
         $privateKey = $this->client->options->get('privateKey');
-        if ($publicKey !== null && $privateKey !== null) {
-            $stringToSign = "$httpMethod\n" . date(DATE_RFC2822) . "\n$path\n";
-            $signature = base64_encode(hash_hmac('sha1', $stringToSign, utf8_encode($privateKey)));
 
-            $this->headers->set("Authorization", "BNET $publicKey+$signature");
+        if ($publicKey !== null && $privateKey !== null) {
+            $date = gmdate(DATE_RFC1123);
+
+            $stringToSign = "$method\n" . $date . "\n$path\n";
+            $signature = base64_encode(hash_hmac('sha1',$stringToSign, $privateKey, true));
+
+            $this->headers->set("Authorization", "BNET" . " " . $publicKey . ":" . $signature);
+            $this->headers->set("Date",  $date);
         }
+    }
+
+    protected function getFullPath($path)
+    {
+        $replacements[':path'] = trim($path, '/');
+
+        return strtr($this->client->options->get('fullPath'), $replacements);
     }
 
     protected function getUrl($path, $method, $parameters)
@@ -142,12 +155,14 @@ abstract class AbstractRequest implements RequestInterface {
         $replacements = array();
         $replacements[':protocol'] = $this->client->options->get('protocol');
         $replacements[':region']   = $this->client->options->get('region');
-        $replacements[':path']     = trim($path, '/');
+        $replacements[':fullPath'] = $path;
+
 
         $url = strtr($this->client->options->get('url'), $replacements);
         if($method === 'GET' && $parameters) {
             $url .= $this->getQueryString($parameters);
         }
+
         return $url;
     }
 

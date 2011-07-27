@@ -46,12 +46,13 @@ class Client
         $this->apis = new ApiBag();
         $this->setCache(new Cache\Null());
         $this->options = new ParameterBag(array(
-            'protocol' => 'http',
-            'region' => 'us',
-            'url' => ':protocol://:region.battle.net/api/wow/:path',
-            'publicKey' => null,
+            'protocol'   => 'http',
+            'region'     => 'us',
+            'url'        => ':protocol://:region.battle.net:fullPath',
+            'fullPath'   => '/api/wow/:path',
+            'publicKey'  => null,
             'privateKey' => null,
-            'ttl' => 3600,
+            'ttl'        => 3600,
         ));
     }
 
@@ -87,7 +88,7 @@ class Client
      * @param array $options
      * @return array
      */
-    public function api($path, array $parameters = array(), $method = 'GET', array $options = array())
+    public function api($path, array $parameters = array(), $method = 'GET')
     {
         return $this->getRequest()->send($path, $method, $parameters);
     }
