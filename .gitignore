@@ -1,4 +1,4 @@
 .idea
 test.php
 test/Keys.php
-cov
+covtest/keys.php
