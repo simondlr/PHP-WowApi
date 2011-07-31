@@ -2,28 +2,22 @@
 
 abstract class AbstractCacheTest extends PHPUnit_Framework_TestCase
 {
-    /**
-     * @todo Implement testGetCachedResponse().
-     */
-    public function testGetCachedResponse()
-    {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
-    }
-
-    /**
-     * @todo Implement testSetCachedResponse().
-     */
     public function testSetCachedResponse()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+        $cache = $this->getCacheAdaptor();
+        $data = array('status' => 'nok', 'reason' => 'Test');
+
+        $cache->setCachedResponse('/test/cache', array(), json_encode($data));
+        $cachedData = $cache->getCachedResponse('/test/cache', array());
+
+        $this->assertNotEquals(false, $cachedData);
+        $this->assertEquals($data, json_decode($cachedData, true));
     }
 
+    /**
+     * @abstract
+     * @return \WowApi\Cache\CacheInterface
+     */
     abstract function getCacheAdaptor();
 }
 ?>
