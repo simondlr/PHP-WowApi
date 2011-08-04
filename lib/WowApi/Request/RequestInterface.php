@@ -9,10 +9,9 @@ interface RequestInterface
     /**
      * Send a request to the server, receive a response
      *
-     * @param  string $url Request url
+     * @param string $url Request url
      * @param array $parameters Parameters
-     * @param string $httpMethod HTTP method to use
-     * @param array $options Request options
+     * @param string $method HTTP method to use
      *
      * @return string HTTP response
      */
@@ -22,7 +21,7 @@ interface RequestInterface
      * Make a GET request
      * @param $path
      * @param array $parameters
-     * @param array $options
+
      * @return array
      */
     function get($path, array $parameters = array());
@@ -30,7 +29,7 @@ interface RequestInterface
      * Make a POST request
      * @param $path
      * @param array $parameters
-     * @param array $options
+
      * @return array
      */
     function post($path, array $parameters = array());
@@ -38,7 +37,7 @@ interface RequestInterface
      * Make a PUT request
      * @param $path
      * @param array $parameters
-     * @param array $options
+
      * @return array
      */
     function put($path, array $parameters = array());
@@ -46,20 +45,28 @@ interface RequestInterface
      * Make a DELETE request
      * @param $path
      * @param array $parameters
-     * @param array $options
+
      * @return array
      */
     function delete($path, array $parameters = array());
 
     /**
-     * Makes a request
+     * Makes a request to the API
      * @param $path
+     * @param string $method
      * @param array $parameters
-     * @param string $httpMethod
-     * @param array $options
      * @return array
      */
-    function send($path, $method='GET', array $parameters=array());
+    function api($path, $method='GET', array $parameters=array());
+
+    /**
+     * Makes a request to a URL
+     * @param $url
+     * @param string $method
+     * @param array $parameters
+     * @return array
+     */
+    function send($url, $method='GET', array $parameters=array());
     /**
      * @abstract
      * @param \WowApi\Client $client

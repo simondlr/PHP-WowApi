@@ -18,17 +18,17 @@ interface CacheInterface
     function read($key);
     /**
      * @abstract
-     * @param $path
+     * @param $url
      * @param $parameters
      * @return void
      */
-    function getCachedResponse($path, $parameters);
+    function getCachedResponse($url, $parameters);
     /**
      * @abstract
-     * @param $path
+     * @param $url
      * @param $parameters
      * @param $response
      * @return void
      */
-    function setCachedResponse($path, $parameters, $response);
+    function setCachedResponse($url, $parameters, $response);
 }

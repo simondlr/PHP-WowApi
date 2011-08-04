@@ -6,7 +6,7 @@ use WowApi\Exception\Exception;
 use WowApi\Request\Curl;
 use WowApi\Request\RequestInterface;
 use WowApi\Api\ApiInterface;
-use WowApi\Api\Arena;
+use WowApi\Api\Auction;
 use WowApi\Api\Character;
 use WowApi\Api\Classes;
 use WowApi\Api\Items;
@@ -92,7 +92,7 @@ class Client
      */
     public function api($path, array $parameters = array(), $method = 'GET')
     {
-        return $this->getRequest()->send($path, $method, $parameters);
+        return $this->getRequest()->api($path, $method, $parameters);
     }
 
     /**
@@ -184,25 +184,25 @@ class Client
     /** API's **/
 
     /**
-     * Returns the arena API
-     * @return \WowApi\Api\Arena
+     * Returns the auction API
+     * @return \WowApi\Api\Auction
      */
-    public function getArenaApi()
+    public function getAuctionApi()
     {
-        if (!$this->apis->get('arena')) {
-            $this->apis->set('arena', new Arena($this));
+        if (!$this->apis->has('auction')) {
+            $this->apis->set('auction', new Auction($this));
         }
 
-        return $this->apis->get('arena');
+        return $this->apis->get('auction');
     }
-    
+
     /**
      * Returns the character API
      * @return \WowApi\Api\Character
      */
     public function getCharacterApi()
     {
-        if (!$this->apis->get('character')) {
+        if (!$this->apis->has('character')) {
             $this->apis->set('character', new Character($this));
         }
 
@@ -241,7 +241,7 @@ class Client
      */
     public function getGuildPerksApi()
     {
-        if (!$this->apis->get('guildPerks')) {
+        if (!$this->apis->has('guildPerks')) {
             $this->apis->set('guildPerks', new GuildPerks($this));
         }
 
@@ -280,7 +280,7 @@ class Client
      */
     public function getRealmApi()
     {
-        if (!$this->apis->get('realm')) {
+        if (!$this->apis->has('realm')) {
             $this->apis->set('realm', new Realm($this));;
         }
 

@@ -25,7 +25,6 @@ class Curl extends AbstractRequest
     {
         //Set cURL options
         $curlOptions = array(
-            CURLINFO_HEADER_OUT            => true,
             CURLOPT_URL            => $url,
             CURLOPT_TIMEOUT        => 10,
             CURLOPT_ENCODING       => "gzip",

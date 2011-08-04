@@ -37,36 +37,24 @@ abstract class AbstractRequest implements RequestInterface {
     }
 
     public function get($path, array $parameters = array()) {
-        return $this->send($path, 'GET', $parameters);
+        return $this->api($path, 'GET', $parameters);
     }
 
     public function post($path, array $parameters = array()) {
-        return $this->send($path, 'POST', $parameters);
+        return $this->api($path, 'POST', $parameters);
     }
 
     public function put($path, array $parameters = array()) {
-        return $this->send($path, 'PUT', $parameters);
+        return $this->api($path, 'PUT', $parameters);
     }
 
     public function delete($path, array $parameters = array()) {
-        return $this->send($path, 'DELETE', $parameters);
+        return $this->api($path, 'DELETE', $parameters);
     }
 
-    public function send($path, $method = 'GET', array $parameters = array()) {
+    public function api($path, $method = 'GET', array $parameters = array()) {
         //Set the path to the full path before checking the cache
         $path = $this->getFullPath($path);
-        $cachedAt = null;
-
-        // Check the cache
-        if($cache = $this->isCached($path, $parameters)) {
-            $cachedAt = !isset($cache) ? $cache['cachedAt'] : null;
-            if ($cache && isset($cache['cachedAt']) && (time() - $cache['cachedAt']) < $this->client->options->get('ttl')) {
-                return $cache;
-            }
-            if (isset($cache) && isset($cache['lastModified'])) {
-                $this->headers->set('If-Modified-Since', date(DATE_RFC1123, $cache['lastModified']));
-            }
-        }
 
         //Make request
         if($method === 'GET') {
@@ -76,6 +64,23 @@ abstract class AbstractRequest implements RequestInterface {
         }
 
         $this->signRequest($path, $method);
+
+        return $this->send($url, $method, $parameters);
+    }
+
+    public function send($url, $method='GET', array $parameters=array())
+    {
+        // Check the cache
+        if($cache = $this->isCached($url, $parameters)) {
+            if ($cache && isset($cache['cachedAt']) && (time() - $cache['cachedAt']) < $this->client->options->get('ttl')) {
+                $response['modified'] = false;
+                return $cache;
+            }
+            if (isset($cache) && isset($cache['lastModified'])) {
+                $this->headers->set('If-Modified-Since', date(DATE_RFC1123, $cache['lastModified']));
+            }
+        }
+
         $response = $this->makeRequest($url, $method, $parameters);
         $httpCode = $response['headers']['http_code'];
 
@@ -102,11 +107,9 @@ abstract class AbstractRequest implements RequestInterface {
             }
         }
 
-        $this->cache($path, $parameters, $response);
+        $this->cache($url, $parameters, $response);
 
-        //Add cachedAt and modified variables to check if response is new
         $response['modified'] = true;
-        $response['cachedAt'] = $cachedAt;
         return $response;
     }
 

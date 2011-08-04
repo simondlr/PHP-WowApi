@@ -12,18 +12,18 @@ abstract class AbstractCache implements CacheInterface
         $this->options = new ParameterBag($options);
     }
 
-    public function getCachedResponse($path, $parameters)
+    public function getCachedResponse($url, $parameters)
     {
-        return $this->read("wowapi:cache" . $this->getHash($path, $parameters));
+        return $this->read("wowapi:cache" . $this->getHash($url, $parameters));
     }
 
-    public function setCachedResponse($path, $parameters, $response)
+    public function setCachedResponse($url, $parameters, $response)
     {
-        $this->write("wowapi:cache" . $this->getHash($path, $parameters), $response);
+        $this->write("wowapi:cache" . $this->getHash($url, $parameters), $response);
     }
 
-    protected function getHash($path, $parameters)
+    protected function getHash($url, $parameters)
     {
-        return md5($path . json_encode($parameters));
+        return md5($url . json_encode($parameters));
     }
 }

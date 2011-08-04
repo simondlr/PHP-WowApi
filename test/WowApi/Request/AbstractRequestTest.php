@@ -11,7 +11,7 @@ abstract class AbstractRequestTest extends PHPUnit_Framework_TestCase
     {
         $client  = Shared::Client();
 
-        $response = $client->getRequest()->send('realm/status');
+        $response = $client->getRequest()->api('realm/status');
         $this->assertArrayHasKey('realms', $response);
     }
 
@@ -23,7 +23,7 @@ abstract class AbstractRequestTest extends PHPUnit_Framework_TestCase
     {
         $client  = Shared::Client();
 
-        $response = $client->getRequest()->send('does/not/exist');
+        $response = $client->getRequest()->api('does/not/exist');
         $this->assertEquals(404, $response['headers']['http_code']);
     }
 
@@ -34,7 +34,7 @@ abstract class AbstractRequestTest extends PHPUnit_Framework_TestCase
     {
         $client  = Shared::Client();
 
-        $response = $client->getRequest()->send('character/blank/blank');
+        $response = $client->getRequest()->api('character/blank/blank');
         $this->assertEquals(404, $response['headers']['http_code']);
     }
 
