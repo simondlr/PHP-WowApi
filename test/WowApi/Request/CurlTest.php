@@ -21,15 +21,21 @@ class CurlTest extends AbstractRequestTest
         }
     }
 
-    /**
-     * @todo Implement testMakeRequest().
-     */
     public function testMakeRequest()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
+        $client = new \WowApi\Client();
+        $client->setRegion('us');
+        $client->setRequest(new Curl($client));
+        $client->getRequest()->makeRequest('http://us.blizzard.com/');
+    }
+
+    public function testMakeRequestToNonExistantPage()
+    {
+        $client = new \WowApi\Client();
+        $client->setRegion('us');
+        $client->setRequest(new Curl($client));
+        $response = $client->getRequest()->makeRequest('http://us.blizzard.com/404');
+        $this->assertEquals(404, $response['headers']['http_code']);
     }
 
     function getRequestAdaptor()

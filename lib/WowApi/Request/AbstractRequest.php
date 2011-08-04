@@ -85,22 +85,19 @@ abstract class AbstractRequest implements RequestInterface {
             return $cache;
         } else {
             $response = json_decode($response['response'], true);
-            if(!$response) {
-                throw new ApiException("Error parsing response");
-            }
 
             // Check for errors
             if($httpCode === 404) {
-                if (isset($response['reason'])) {
+                if ($response !== false && isset($response['reason'])) {
                     throw new NotFoundException($response['reason']);
                 } else {
-                    throw new NotFoundException("Resource not found");
+                    throw new NotFoundException("Page not found.");
                 }
-            } elseif ($httpCode !== 200) {
-                if (isset($response['reason'])) {
+            } elseif ($httpCode !== 200 || !$response) {
+                if ($response !== false && isset($response['reason'])) {
                     throw new ApiException($response['reason'], $httpCode);
                 } else {
-                    throw new ApiException("Unknown error", $httpCode);
+                    throw new ApiException("Unknown error.", $httpCode);
                 }
             }
         }
