@@ -27,6 +27,10 @@ class ClientTest extends PHPUnit_Framework_TestCase {
 
     function testValidApplicationAuthentication()
     {
+        if(PUBLIC_KEY === '' || PRIVATE_KEY === '') {
+            $this->markTestSkipped('No keys were found');
+        }
+
         $client = Shared::Client();
         $client->authenticate(PUBLIC_KEY, PRIVATE_KEY);
         $result = $client->api('realm/status');
