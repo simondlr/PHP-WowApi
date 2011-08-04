@@ -54,10 +54,12 @@ abstract class AbstractRequest implements RequestInterface {
 
     public function send($path, $method = 'GET', array $parameters = array()) {
         //Set the path to the full path before checking the cache
-         $path = $this->getFullPath($path);
-        
+        $path = $this->getFullPath($path);
+        $cachedAt = null;
+
         // Check the cache
         if($cache = $this->isCached($path, $parameters)) {
+            $cachedAt = !isset($cache) ? $cache['cachedAt'] : null;
             if ($cache && isset($cache['cachedAt']) && (time() - $cache['cachedAt']) < $this->client->options->get('ttl')) {
                 return $cache;
             }
@@ -79,11 +81,11 @@ abstract class AbstractRequest implements RequestInterface {
 
 
         if (isset($cache) && $httpCode === 304) {
+            $cache['modified'] = false;
             return $cache;
         } else {
             $response = json_decode($response['response'], true);
             if(!$response) {
-
                 throw new ApiException("Error parsing response");
             }
 
@@ -105,13 +107,16 @@ abstract class AbstractRequest implements RequestInterface {
 
         $this->cache($path, $parameters, $response);
 
+        //Add cachedAt and modified variables to check if response is new
+        $response['modified'] = true;
+        $response['cachedAt'] = $cachedAt;
         return $response;
     }
 
     protected function isCached($path, $parameters)
     {
         $cache = $this->client->getCache()->getCachedResponse($path, $parameters);
-        
+
         if (($cache !== false)) {
             $cache = json_decode($cache, true);
 
