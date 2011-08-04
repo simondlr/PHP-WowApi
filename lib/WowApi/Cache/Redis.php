@@ -18,7 +18,7 @@ class Redis extends AbstractCache
     }
 
     public function write($key, $data) {
-        $this->redis->setex($key, $this->getOption('ttl', 3600), $data);
+        $this->redis->setex($key, $this->options->get('ttl', 3600), $data);
     }
 
     public function read($key) {

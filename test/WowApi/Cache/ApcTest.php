@@ -8,7 +8,7 @@ class ApcTest extends AbstractCacheTest
     {
         parent::setUp();
 
-        if (!class_exists('apc_store')) {
+        if (!function_exists('apc_store')) {
             $this->markTestSkipped('APC is not installed');
         }
     }

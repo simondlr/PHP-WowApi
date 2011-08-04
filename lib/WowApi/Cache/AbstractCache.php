@@ -5,7 +5,7 @@ use WowApi\ParameterBag;
 
 abstract class AbstractCache implements CacheInterface
 {
-    public $options = null;
+    public $options = array();
 
     public function __construct($options)
     {

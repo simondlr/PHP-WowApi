@@ -18,14 +18,21 @@ class Memcache extends AbstractCache
         if (!extension_loaded('memcache')) {
             throw new Exception("The Memcache extension does not seem to be loaded.");
         }
-        $this->memcache = new \Memcache();
 
-        //Load servers
-        foreach($this->options->get('servers', array('host' => '127.0.0.1')) as $server) {
+        $this->memcache = new \Memcache();
+        $this->loadServers($this->options->get('servers', array(
+            array('host' => 'localhost'),
+        )));
+    }
+
+    protected function loadServers($servers)
+    {
+        foreach($servers as $server) {
             if(!isset($server['host'])) {
-                throw new \InvalidArgumentException("Each server must have a valid host parameters");
+                throw new \InvalidArgumentException("Each server must have a valid host parameter");
             }
             $server = array_merge(array(
+                'host' => 'localhost',
                 'port' => null,
                 'persistent' => null,
                 'weight' => null,
