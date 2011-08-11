@@ -33,9 +33,9 @@ class Memcache extends AbstractCache
             }
             $server = array_merge(array(
                 'host' => 'localhost',
-                'port' => null,
+                'port' => 11211,
                 'persistent' => null,
-                'weight' => null,
+                'weight' => 1,
                 'timeout' => null,
             ), $server);
 
