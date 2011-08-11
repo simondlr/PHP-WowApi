@@ -12,6 +12,16 @@ if (!function_exists('curl_init')) {
 
 class Curl extends AbstractRequest
 {
+    protected $curl_opts = array(
+        CURLOPT_TIMEOUT        => 10,
+        CURLOPT_ENCODING       => "gzip",
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_SSL_VERIFYHOST => false,
+        CURLOPT_SSL_VERIFYPEER => false,
+        CURLOPT_VERBOSE        => false,
+    );
+
     /**
      * Send a request to the server, receive a response
      *
@@ -24,40 +34,28 @@ class Curl extends AbstractRequest
     public function makeRequest($url, $method='GET', array $parameters=array())
     {
         //Set cURL options
-        $curlOptions = array(
-            CURLOPT_URL            => $url,
-            CURLOPT_TIMEOUT        => 10,
-            CURLOPT_ENCODING       => "gzip",
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_SSL_VERIFYHOST => false,
-            CURLOPT_SSL_VERIFYPEER => false,
-            CURLOPT_VERBOSE        => false,
-        );
-        if(isset($options['curlOptions'])) {
-            $curlOptions = array_merge($this->client->options->get('curlOptions'), $curlOptions);
-        }
-        $curlOptions[CURLOPT_HTTPHEADER] = $this->headers->getHeaders();
+        $this->curl_opts[CURLOPT_URL]        = $url;
+        $this->curl_opts[CURLOPT_HTTPHEADER] = $this->headers->getHeaders();
 
 		// Prepare Data
         if (!empty($parameters)) {
             switch($method) {
                 case 'POST':
-                    $curlOptions[CURLOPT_POST] = true;
-                    $curlOptions[CURLOPT_POSTFIELDS] = Utilities::encodeUrlParam($parameters);
+                    $this->curl_opts[CURLOPT_POST] = true;
+                    $this->curl_opts[CURLOPT_POSTFIELDS] = Utilities::encodeUrlParam($parameters);
                     break;
                 case 'PUT':
                     $file_handle = fopen($parameters, 'r');
-                    $curlOptions[CURLOPT_PUT] = true;
-                    $curlOptions[CURLOPT_INFILE] = $file_handle;
+                    $this->curl_opts[CURLOPT_PUT] = true;
+                    $this->curl_opts[CURLOPT_INFILE] = $file_handle;
                     break;
                 case 'DELETE':
-                    $curlOptions[CURLOPT_CUSTOMREQUEST] = 'delete';
+                    $this->curl_opts[CURLOPT_CUSTOMREQUEST] = 'delete';
                     break;
             }
         }
 
-        $response = $this->doCurlCall($curlOptions);
+        $response = $this->doCurlCall();
 
 		if ($response['response'] === false) {
 			throw new RequestException($response['errorMessage'], $response['errorNumber']);
@@ -69,14 +67,15 @@ class Curl extends AbstractRequest
     /**
      * Execute the query
      *
-     * @param array $curlOptions Curl Options
-     *
      * @return array Curl Response
      */
-    protected function doCurlCall(array $curlOptions)
+    protected function doCurlCall()
     {
         $curl = curl_init();
-        curl_setopt_array($curl, $curlOptions);
+
+        var_dump($this->curl_opts);
+        die();
+        curl_setopt_array($curl, $this->curl_opts);
 
         $response = curl_exec($curl);
         $headers = curl_getinfo($curl);
@@ -87,4 +86,14 @@ class Curl extends AbstractRequest
 
         return compact('response', 'headers', 'errorNumber', 'errorMessage');
     }
+
+	/**
+	* Sets an option to a cURL session
+	* @param $option constant, cURL option
+	* @param $value mixed, value of option
+	*/
+	public function setOpt($option, $value)
+	{
+		$this->curl_opts[$option] = $value;
+	}
 }

@@ -183,7 +183,7 @@ class Client
     }
 
     /** API's **/
-    
+
     /**
      * Returns the arena API
      * @return \WowApi\Api\Arena
