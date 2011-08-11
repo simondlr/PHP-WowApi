@@ -97,15 +97,20 @@ class Client
     }
 
     /**
-     * Authenticate the application
+     * Authenticate the application. If secure is true use SSL
      * @param $publicKey
      * @param $privateKey
+     * @param bool $secure
      * @return void
      */
-    public function authenticate($publicKey, $privateKey)
+    public function authenticate($publicKey, $privateKey, $secure=true)
     {
         $this->options->set('publicKey', $publicKey);
         $this->options->set('privateKey', $privateKey);
+
+        if($secure) {
+            $this->options->set('protocol', 'https');
+        }
     }
 
     /**
