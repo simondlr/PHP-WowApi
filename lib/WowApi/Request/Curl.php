@@ -73,8 +73,6 @@ class Curl extends AbstractRequest
     {
         $curl = curl_init();
 
-        var_dump($this->curl_opts);
-        die();
         curl_setopt_array($curl, $this->curl_opts);
 
         $response = curl_exec($curl);
